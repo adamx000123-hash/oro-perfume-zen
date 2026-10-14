@@ -5335,6 +5335,23 @@ footer {
   }
 }
 
+.filter, .add-button {
+  height: auto;
+  min-height: 44px;
+}
+
+@media (width <= 767px) {
+  .hero-shade {
+    background: linear-gradient(90deg,var(--background),var(--background) 47%,transparent 100%);
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .hero-shade {
+      background: linear-gradient(90deg,var(--background),color-mix(in oklch,var(--background) 88%,transparent) 47%,transparent 100%);
+    }
+  }
+}
+
 @property --tw-translate-x {
   syntax: "*";
   inherits: false;
