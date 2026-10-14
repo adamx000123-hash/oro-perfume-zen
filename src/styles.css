@@ -519,3 +519,6 @@ footer { padding-top:50px; }
   .promise>svg { position:absolute; left:0; top:2px; }
 }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } *,*:before,*:after { animation:none!important; transition:none!important; } .reveal { opacity:1; transform:none; } }
+/* All purchase and filtering targets remain touch friendly. */
+.filter,.add-button { min-height:44px; height:auto; }
+@media(max-width:767px) { .hero-shade { background:linear-gradient(90deg,var(--background),color-mix(in oklch,var(--background) 88%,transparent) 47%,transparent 100%); } }
