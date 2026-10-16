@@ -22,17 +22,25 @@ export const CATALOG = [
   { type: 'offer', id: 'trio', name: 'Good things come in threes.', description: 'Buy 2, get your third fragrance free', kind: 'bundle' },
   { type: 'offer', id: 'moment', name: 'A little luxury. A limited moment.', description: 'The signature selection · Until 31 October', kind: 'limited' },
 ] as const;
-export const PRODUCTS = CATALOG.filter(item => item.type === 'product');
-export const OFFERS = CATALOG.filter(item => item.type === 'offer');
-export type Product = typeof PRODUCTS[number];
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; notes: readonly string[] };
+export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited' };
+export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
+export type StoreData = { products: Product[]; offers: Offer[]; settings: StoreSettings };
+// Bundled photos can be referenced by key from the admin dashboard; other values are uploaded image URLs.
+export const BUILT_IN_IMAGES: Record<string, string> = { noir, rose, ambre, vert };
+export const resolveImage = (value: string) => BUILT_IN_IMAGES[value] ?? value;
+export const PRODUCTS: Product[] = CATALOG.filter(item => item.type === 'product');
+const OFFER_LABELS = ['THE SIGNATURE EDIT', 'THE PERFECT TRIO', 'ONLY FOR A MOMENT'];
+export const OFFERS: Offer[] = CATALOG.filter(item => item.type === 'offer').map((o, i) => ({ id: o.id, label: OFFER_LABELS[i], name: o.name, description: o.description, kind: o.kind }));
+export const FALLBACK_STORE: StoreData = { products: PRODUCTS, offers: OFFERS, settings: { whatsappNumber: WHATSAPP_NUMBER, instagramUrl: INSTAGRAM_URL, offerEnd: OFFER_END } };
 export type CartItem = { id: string; size: number; quantity: number };
 export const money = (value: number) => `${Math.round(value).toLocaleString('en-US')} MAD`;
 export function unitPrice(product: Product, size: number) { return Math.round(product.price * (size === 50 ? 0.65 : 1)); }
-export function totals(cart: CartItem[]) {
+export function totals(cart: CartItem[], products: Product[] = PRODUCTS, bundleActive = true) {
   let subtotal = 0, productDiscount = 0;
   const eligible: number[] = [];
   cart.forEach(item => {
-    const product = PRODUCTS.find(p => p.id === item.id);
+    const product = products.find(p => p.id === item.id);
     if (!product) return;
     const price = unitPrice(product, item.size);
     const net = Math.round(price * (1 - product.discount / 100));
@@ -41,14 +49,14 @@ export function totals(cart: CartItem[]) {
     for (let i = 0; i < item.quantity; i++) eligible.push(net);
   });
   eligible.sort((a, b) => a - b);
-  const bundleDiscount = eligible.slice(0, Math.floor(eligible.length / 3)).reduce((a, b) => a + b, 0);
+  const bundleDiscount = !bundleActive ? 0 : eligible.slice(0, Math.floor(eligible.length / 3)).reduce((a, b) => a + b, 0);
   const discount = productDiscount + bundleDiscount;
   return { subtotal, productDiscount, bundleDiscount, discount, total: subtotal - discount };
 }
-export function orderMessage(cart: CartItem[], customer: { name: string; phone: string; city: string; address: string }) {
-  const total = totals(cart);
+export function orderMessage(cart: CartItem[], customer: { name: string; phone: string; city: string; address: string }, products: Product[] = PRODUCTS, bundleActive = true) {
+  const total = totals(cart, products, bundleActive);
   return ['ORO PARFUME — New order', '', ...cart.map(item => {
-    const p = PRODUCTS.find(product => product.id === item.id);
+    const p = products.find(product => product.id === item.id);
     return p ? `${p.name} · ${item.size} ml × ${item.quantity} — ${money(Math.round(unitPrice(p, item.size) * (1 - p.discount / 100)) * item.quantity)}` : '';
   }), '', `Subtotal: ${money(total.subtotal)}`, `Discount: ${money(total.discount)}`, `Total: ${money(total.total)}`, 'Delivery fee: to be confirmed on WhatsApp', '', `Full name: ${customer.name}`, `Phone: ${customer.phone}`, `City: ${customer.city}`, `Address: ${customer.address}`, '', 'Payment: cash on delivery or as agreed on WhatsApp. Please confirm availability and delivery.'].join('\n');
 }
