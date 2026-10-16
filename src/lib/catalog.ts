@@ -31,7 +31,7 @@ export const BUILT_IN_IMAGES: Record<string, string> = { noir, rose, ambre, vert
 export const resolveImage = (value: string) => BUILT_IN_IMAGES[value] ?? value;
 export const PRODUCTS: Product[] = CATALOG.filter(item => item.type === 'product');
 const OFFER_LABELS = ['THE SIGNATURE EDIT', 'THE PERFECT TRIO', 'ONLY FOR A MOMENT'];
-export const OFFERS: Offer[] = CATALOG.filter(item => item.type === 'offer').map((o, i) => ({ id: o.id, label: OFFER_LABELS[i], name: o.name, description: o.description, kind: o.kind }));
+export const OFFERS: Offer[] = CATALOG.filter(item => item.type === 'offer').map((o, i) => ({ id: o.id, label: OFFER_LABELS[i] ?? '', name: o.name, description: o.description, kind: o.kind }));
 export const FALLBACK_STORE: StoreData = { products: PRODUCTS, offers: OFFERS, settings: { whatsappNumber: WHATSAPP_NUMBER, instagramUrl: INSTAGRAM_URL, offerEnd: OFFER_END } };
 export type CartItem = { id: string; size: number; quantity: number };
 export const money = (value: number) => `${Math.round(value).toLocaleString('en-US')} MAD`;
