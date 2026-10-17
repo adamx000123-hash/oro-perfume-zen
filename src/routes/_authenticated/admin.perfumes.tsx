@@ -16,6 +16,14 @@ export const Route = createFileRoute('/_authenticated/admin/perfumes')({ compone
 
 type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; notes: string[]; visible: boolean; sort: number };
 const empty: Product = { id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', notes: ['', '', ''], visible: true, sort: 0 };
+const CATEGORY_ORDER = ['Men', 'Women', 'Unisex'];
+
+// Fragrances are listed grouped by type so each family is easy to find at a glance.
+function groupByCategory(products: Product[]) {
+  const known = CATEGORY_ORDER.filter(category => products.some(p => p.category === category));
+  const others = [...new Set(products.map(p => p.category))].filter(category => !CATEGORY_ORDER.includes(category));
+  return [...known, ...others].map(category => ({ category, items: products.filter(p => p.category === category) }));
+}
 
 function Perfumes() {
   const queryClient = useQueryClient();
@@ -57,28 +65,39 @@ function Perfumes() {
     });
   }
 
+  const groups = groupByCategory(products);
+
   return <div className="space-y-6">
     <div className="flex items-center justify-between">
       <div><h1 className="font-serif text-4xl">Perfumes</h1><p className="text-muted-foreground">Add, edit, hide or remove fragrances. Changes appear on the shop immediately.</p></div>
       <Button onClick={() => { setError(''); setEditing({ ...empty, sort: products.length }); }}><Plus size={16} /> Add perfume</Button>
     </div>
     {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-    <div className="overflow-x-auto rounded-lg border bg-card">
-      <table className="w-full text-sm">
-        <thead><tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground"><th className="p-3">Perfume</th><th className="p-3">Category</th><th className="p-3">Price</th><th className="p-3">Discount</th><th className="p-3">Visible</th><th className="p-3" /></tr></thead>
-        <tbody>{products.map(p => <tr key={p.id} className="border-b last:border-0">
-          <td className="p-3"><div className="flex items-center gap-3"><img src={resolveImage(p.image)} alt="" className="h-10 w-10 rounded object-cover" /><div><p className="font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.family}</p></div></div></td>
-          <td className="p-3">{p.category}</td>
-          <td className="p-3 tabular-nums">{p.price} MAD</td>
-          <td className="p-3 tabular-nums">{p.discount}%</td>
-          <td className="p-3"><Switch checked={p.visible} onCheckedChange={() => toggle.mutate(p)} aria-label={`Show ${p.name}`} /></td>
-          <td className="p-3"><div className="flex gap-1 justify-end">
-            <Button variant="ghost" size="icon" onClick={() => { setError(''); setEditing(p); }} aria-label={`Edit ${p.name}`}><Pencil size={15} /></Button>
-            <Button variant="ghost" size="icon" onClick={() => { if (confirm(`Delete ${p.name}?`)) remove.mutate(p.id); }} aria-label={`Delete ${p.name}`}><Trash2 size={15} /></Button>
-          </div></td>
-        </tr>)}</tbody>
-      </table>
-    </div>
+
+    {products.length === 0 && <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">No perfumes yet. Add your first fragrance.</div>}
+
+    {groups.map(group => <section key={group.category} aria-labelledby={`group-${group.category}`} className="space-y-3">
+      <div className="flex items-baseline gap-3">
+        <h2 id={`group-${group.category}`} className="font-serif text-2xl">{group.category}</h2>
+        <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{group.items.length} {group.items.length === 1 ? 'fragrance' : 'fragrances'}</span>
+      </div>
+      <div className="overflow-x-auto rounded-lg border bg-card">
+        <table className="w-full text-sm">
+          <thead><tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground"><th className="p-3">Perfume</th><th className="p-3">Family</th><th className="p-3">Price</th><th className="p-3">Discount</th><th className="p-3">Visible</th><th className="p-3" /></tr></thead>
+          <tbody>{group.items.map(p => <tr key={p.id} className="border-b last:border-0">
+            <td className="p-3"><div className="flex items-center gap-3"><img src={resolveImage(p.image)} alt="" className="h-10 w-10 rounded object-cover" /><div><p className="font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.id}</p></div></div></td>
+            <td className="p-3 text-muted-foreground">{p.family || '—'}</td>
+            <td className="p-3 tabular-nums">{p.price} MAD</td>
+            <td className="p-3 tabular-nums">{p.discount}%</td>
+            <td className="p-3"><Switch checked={p.visible} onCheckedChange={() => toggle.mutate(p)} aria-label={`Show ${p.name}`} /></td>
+            <td className="p-3"><div className="flex gap-1 justify-end">
+              <Button variant="ghost" size="icon" onClick={() => { setError(''); setEditing(p); }} aria-label={`Edit ${p.name}`}><Pencil size={15} /></Button>
+              <Button variant="ghost" size="icon" onClick={() => { if (confirm(`Delete ${p.name}?`)) remove.mutate(p.id); }} aria-label={`Delete ${p.name}`}><Trash2 size={15} /></Button>
+            </div></td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+    </section>)}
 
     <Dialog open={!!editing} onOpenChange={open => !open && setEditing(null)}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
