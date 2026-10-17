@@ -3,4 +3,5 @@
 - [x] Implement filters, product details, saved cart, offers and WhatsApp checkout.
 - [x] Test shopping flow and screen sizes; provide single HTML export.
 - [x] Update typography only in the storefront and single HTML export; verify phone and desktop rendering.
-- [ ] Activate live WhatsApp ordering — waiting for the owner's real WhatsApp number.
+- [x] Finish admin dashboard pages (perfumes, offers, visitors, settings) connected to the live store; verified edit-to-shop flow.
+- [ ] Activate live WhatsApp ordering — waiting for the owner's real WhatsApp number (can now be entered in Admin → Contact links).
