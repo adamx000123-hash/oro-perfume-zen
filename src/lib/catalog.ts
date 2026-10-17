@@ -8,6 +8,7 @@ import vert from '@/assets/vert.jpg';
 export const WHATSAPP_NUMBER = '';
 export const INSTAGRAM_URL = '';
 export const OFFER_END = '2026-11-01T00:00:00Z';
+export const DELIVERY_CITY = 'Nador';
 // All sample products and offers live in this one editable array. Prices are MAD.
 export const CATALOG = [
   { type: 'product', id: 'noir', name: 'Noir Absolu', category: 'Men', family: 'Woody · Intense', price: 690, discount: 30, image: noir, notes: ['Bergamot, black pepper', 'Iris, cedarwood', 'Amber, leather, musk'] },
@@ -58,5 +59,5 @@ export function orderMessage(cart: CartItem[], customer: { name: string; phone: 
   return ['ORO PARFUME — New order', '', ...cart.map(item => {
     const p = products.find(product => product.id === item.id);
     return p ? `${p.name} · ${item.size} ml × ${item.quantity} — ${money(Math.round(unitPrice(p, item.size) * (1 - p.discount / 100)) * item.quantity)}` : '';
-  }), '', `Subtotal: ${money(total.subtotal)}`, `Discount: ${money(total.discount)}`, `Total: ${money(total.total)}`, 'Delivery fee: to be confirmed on WhatsApp', '', `Full name: ${customer.name}`, `Phone: ${customer.phone}`, `City: ${customer.city}`, `Address: ${customer.address}`, '', 'Payment: cash on delivery or as agreed on WhatsApp. Please confirm availability and delivery.'].join('\n');
+  }), '', `Subtotal: ${money(total.subtotal)}`, `Discount: ${money(total.discount)}`, `Total: ${money(total.total)}`, 'Delivery area: Nador only — fee confirmed on WhatsApp', '', `Full name: ${customer.name}`, `Phone: ${customer.phone}`, `City: ${customer.city}`, `Address: ${customer.address}`, '', 'Payment: cash on delivery or as agreed on WhatsApp. Delivery is available in Nador only.'].join('\n');
 }

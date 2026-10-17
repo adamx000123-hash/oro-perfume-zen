@@ -24,7 +24,7 @@ Build a professional, luxury perfume e-commerce website for a brand called "ORO 
 5. **Product details modal:** fragrance notes (top / heart / base), size selector, quantity selector
 6. **Cart drawer:** edit quantities, remove items, subtotal, discount, total, "Order via WhatsApp" button
 7. **Checkout via WhatsApp:** simple form (Full Name, Phone, City, Address). On submit, generate a link `https://wa.me/212XXXXXXXXX?text=...` with a well-structured pre-filled message containing order details (products, quantities, prices, total, customer info). Payment: cash on delivery or as agreed on WhatsApp
-8. **Why Choose Us:** 3-4 features (100% authentic fragrances, delivery to all cities, cash on delivery, WhatsApp support)
+8. **Why Choose Us:** 3-4 features (100% authentic fragrances, delivery in Nador only, cash on delivery, WhatsApp support)
 9. **Footer:** links, contact (WhatsApp, Instagram), copyright
 
 **Functionality (JavaScript):**
