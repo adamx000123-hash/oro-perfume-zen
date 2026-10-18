@@ -50,7 +50,9 @@ export type Database = {
       products: {
         Row: {
           category: string
+          characteristics: Json
           created_at: string
+          description: string
           discount: number
           family: string
           id: string
@@ -63,7 +65,9 @@ export type Database = {
         }
         Insert: {
           category?: string
+          characteristics?: Json
           created_at?: string
+          description?: string
           discount?: number
           family?: string
           id: string
@@ -76,7 +80,9 @@ export type Database = {
         }
         Update: {
           category?: string
+          characteristics?: Json
           created_at?: string
+          description?: string
           discount?: number
           family?: string
           id?: string
