@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { compressImage } from '@/lib/admin';
-import { BUILT_IN_IMAGES, resolveImage } from '@/lib/catalog';
+import { BUILT_IN_IMAGES, CHARACTERISTIC_OPTIONS, resolveImage, type Characteristic } from '@/lib/catalog';
 
 export const Route = createFileRoute('/_authenticated/admin/perfumes')({ component: Perfumes });
 
-type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; notes: string[]; visible: boolean; sort: number };
-const empty: Product = { id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', notes: ['', '', ''], visible: true, sort: 0 };
+type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: Characteristic[]; visible: boolean; sort: number };
+const empty: Product = { id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', description: '', characteristics: [], visible: true, sort: 0 };
 const CATEGORY_ORDER = ['Men', 'Women', 'Unisex'];
 
 // Fragrances are listed grouped by type so each family is easy to find at a glance.
@@ -32,12 +33,12 @@ function Perfumes() {
   const { data: products = [] } = useQuery({ queryKey: ['admin', 'products'], queryFn: async () => {
     const { data, error } = await supabase.from('products').select('*').order('sort').order('created_at');
     if (error) throw error;
-    return data as Product[];
+    return data as unknown as Product[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
 
   const save = useMutation({ mutationFn: async (p: Product) => {
-    const row = { name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: p.image, notes: p.notes.filter(Boolean), visible: p.visible, sort: p.sort };
+    const row = { name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: p.image, description: p.description, characteristics: p.characteristics, visible: p.visible, sort: p.sort };
     const { error } = p.id && products.some(x => x.id === p.id)
       ? await supabase.from('products').update(row).eq('id', p.id)
       : await supabase.from('products').insert({ ...row, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
@@ -61,8 +62,14 @@ function Perfumes() {
     save.mutate({ ...editing,
       name: String(f.get('name')), category: String(f.get('category')), family: String(f.get('family')),
       price: Number(f.get('price')), discount: Number(f.get('discount') || 0), sort: Number(f.get('sort') || 0),
-      notes: [String(f.get('note0')), String(f.get('note1')), String(f.get('note2'))],
+      description: String(f.get('description') ?? ''),
     });
+  }
+
+  function toggleCharacteristic(option: Characteristic) {
+    if (!editing) return;
+    const has = editing.characteristics.some(c => c.label === option.label);
+    setEditing({ ...editing, characteristics: has ? editing.characteristics.filter(c => c.label !== option.label) : [...editing.characteristics, option] });
   }
 
   const groups = groupByCategory(products);
@@ -104,6 +111,7 @@ function Perfumes() {
         <DialogHeader><DialogTitle>{editing && products.some(x => x.id === editing.id) ? 'Edit perfume' : 'New perfume'}</DialogTitle></DialogHeader>
         {editing && <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" name="name" defaultValue={editing.name} required /></div>
+          <div className="space-y-2"><Label htmlFor="description">Short description</Label><Textarea id="description" name="description" defaultValue={editing.description} rows={2} maxLength={160} placeholder="A short, elegant description…" /></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Category</Label><Select name="category" defaultValue={editing.category}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['Men', 'Women', 'Unisex'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label htmlFor="family">Family</Label><Input id="family" name="family" defaultValue={editing.family} placeholder="Woody · Intense" /></div>
@@ -111,7 +119,14 @@ function Perfumes() {
             <div className="space-y-2"><Label htmlFor="discount">Discount %</Label><Input id="discount" name="discount" type="number" min={0} max={90} defaultValue={editing.discount} /></div>
             <div className="space-y-2"><Label htmlFor="sort">Order</Label><Input id="sort" name="sort" type="number" defaultValue={editing.sort} /></div>
           </div>
-          <div className="space-y-2"><Label>Notes (top / heart / base)</Label>{[0, 1, 2].map(i => <Input key={i} name={`note${i}`} defaultValue={editing.notes[i] ?? ''} placeholder={['Top notes', 'Heart notes', 'Base notes'][i]} />)}</div>
+          <div className="space-y-2"><Label>Characteristics</Label>
+            <div className="flex flex-wrap gap-2">
+              {CHARACTERISTIC_OPTIONS.map(option => {
+                const active = editing.characteristics.some(c => c.label === option.label);
+                return <Button key={option.label} type="button" variant={active ? 'default' : 'outline'} size="sm" onClick={() => toggleCharacteristic(option)} aria-pressed={active}>{option.label}</Button>;
+              })}
+            </div>
+          </div>
           <div className="space-y-2"><Label>Photo</Label>
             <div className="flex items-center gap-3"><img src={resolveImage(editing.image)} alt="" className="h-16 w-16 rounded object-cover" />
               <div className="space-y-2">
