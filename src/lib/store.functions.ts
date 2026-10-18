@@ -25,7 +25,7 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
     ]);
     if (products.error || offers.error || settings.error) throw products.error ?? offers.error ?? settings.error;
     return {
-      products: products.data,
+      products: products.data as unknown as StoreData['products'],
       offers: offers.data as Offer[],
       settings: settings.data ? { whatsappNumber: settings.data.whatsapp_number.replace(/\D/g, ''), instagramUrl: settings.data.instagram_url, offerEnd: settings.data.offer_end } : FALLBACK_STORE.settings,
     };
