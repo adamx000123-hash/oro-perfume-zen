@@ -556,3 +556,10 @@ strong, b { font-weight:600; }
   font-weight:500;
   line-height:1.65;
 }
+
+/* Fragrance characteristic badges */
+.char-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.char-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px solid color-mix(in oklch, var(--gold) 45%, transparent); border-radius: 999px; font-size: 11px; letter-spacing: 0.04em; color: var(--foreground); background: color-mix(in oklch, var(--gold) 8%, transparent); }
+.char-badge svg { color: var(--gold); }
+.detail-description { font-size: 15px; line-height: 1.7; color: var(--muted-foreground); margin: 10px 0 14px; }
+.detail-price { display: block; font-size: 20px; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; margin-bottom: 14px; }

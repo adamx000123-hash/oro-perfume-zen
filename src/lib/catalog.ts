@@ -9,21 +9,40 @@ export const WHATSAPP_NUMBER = '';
 export const INSTAGRAM_URL = '';
 export const OFFER_END = '2026-11-01T00:00:00Z';
 export const DELIVERY_CITY = 'Nador';
+
+// Fragrance characteristic badges. Icons are Lucide icon names; unknown values fall back to Sparkles.
+export type Characteristic = { label: string; icon: string };
+export const CHARACTERISTIC_OPTIONS: Characteristic[] = [
+  { label: 'Summer', icon: 'sun' },
+  { label: 'Winter', icon: 'snowflake' },
+  { label: 'Daytime', icon: 'sunrise' },
+  { label: 'Evening', icon: 'moon-star' },
+  { label: 'Office', icon: 'briefcase' },
+  { label: 'Occasion', icon: 'gem' },
+  { label: 'Floral', icon: 'flower-2' },
+  { label: 'Woody', icon: 'tree-pine' },
+  { label: 'Fresh', icon: 'sparkles' },
+  { label: 'Oriental', icon: 'flame' },
+  { label: 'Citrus', icon: 'citrus' },
+  { label: 'Sweet', icon: 'candy' },
+];
+export const CHARACTERISTIC_LABELS = CHARACTERISTIC_OPTIONS.map(c => c.label);
+
 // All sample products and offers live in this one editable array. Prices are MAD.
 export const CATALOG = [
-  { type: 'product', id: 'noir', name: 'Noir Absolu', category: 'Men', family: 'Woody · Intense', price: 690, discount: 30, image: noir, notes: ['Bergamot, black pepper', 'Iris, cedarwood', 'Amber, leather, musk'] },
-  { type: 'product', id: 'rose', name: 'Rose Éternelle', category: 'Women', family: 'Floral · Delicate', price: 590, discount: 0, image: rose, notes: ['Lychee, pink pepper', 'Damask rose, peony', 'White musk, vanilla'] },
-  { type: 'product', id: 'ambre', name: 'Ambre Royal', category: 'Unisex', family: 'Oriental · Warm', price: 790, discount: 30, image: ambre, notes: ['Saffron, mandarin', 'Amber, jasmine', 'Oud, sandalwood, vanilla'] },
-  { type: 'product', id: 'vert', name: 'Bois de Lumière', category: 'Unisex', family: 'Fresh · Woody', price: 650, discount: 0, image: vert, notes: ['Bergamot, lemon', 'Vetiver, green tea', 'Cedarwood, white musk'] },
-  { type: 'product', id: 'velours', name: 'Velours de Nuit', category: 'Women', family: 'Floral · Sensual', price: 720, discount: 0, image: rose, notes: ['Blackcurrant, pear', 'Jasmine, orange blossom', 'Patchouli, vanilla'] },
-  { type: 'product', id: 'oud', name: 'Oud Impérial', category: 'Men', family: 'Woody · Spiced', price: 890, discount: 0, image: noir, notes: ['Cardamom, saffron', 'Oud, rose', 'Leather, sandalwood'] },
-  { type: 'product', id: 'soleil', name: 'Soleil Doré', category: 'Unisex', family: 'Amber · Radiant', price: 620, discount: 0, image: ambre, notes: ['Neroli, mandarin', 'Ylang-ylang, jasmine', 'Amber, vanilla'] },
-  { type: 'product', id: 'jardin', name: 'Jardin Secret', category: 'Women', family: 'Fresh · Floral', price: 560, discount: 0, image: vert, notes: ['Green apple, bergamot', 'Lily, magnolia', 'Musk, cedar'] },
+  { type: 'product', id: 'noir', name: 'Noir Absolu', category: 'Men', family: 'Woody · Intense', price: 690, discount: 30, image: noir, description: 'A deep, confident woody scent for evenings that matter.', characteristics: [{ label: 'Evening', icon: 'moon-star' }, { label: 'Winter', icon: 'snowflake' }, { label: 'Woody', icon: 'tree-pine' }, { label: 'Occasion', icon: 'gem' }] },
+  { type: 'product', id: 'rose', name: 'Rose Éternelle', category: 'Women', family: 'Floral · Delicate', price: 590, discount: 0, image: rose, description: 'A soft, romantic floral that feels fresh all day.', characteristics: [{ label: 'Floral', icon: 'flower-2' }, { label: 'Daytime', icon: 'sunrise' }, { label: 'Sweet', icon: 'candy' }] },
+  { type: 'product', id: 'ambre', name: 'Ambre Royal', category: 'Unisex', family: 'Oriental · Warm', price: 790, discount: 30, image: ambre, description: 'A warm oriental embrace, rich and unforgettable.', characteristics: [{ label: 'Oriental', icon: 'flame' }, { label: 'Evening', icon: 'moon-star' }, { label: 'Occasion', icon: 'gem' }] },
+  { type: 'product', id: 'vert', name: 'Bois de Lumière', category: 'Unisex', family: 'Fresh · Woody', price: 650, discount: 0, image: vert, description: 'A bright, clean freshness made for everyday wear.', characteristics: [{ label: 'Fresh', icon: 'sparkles' }, { label: 'Summer', icon: 'sun' }, { label: 'Office', icon: 'briefcase' }, { label: 'Citrus', icon: 'citrus' }] },
+  { type: 'product', id: 'velours', name: 'Velours de Nuit', category: 'Women', family: 'Floral · Sensual', price: 720, discount: 0, image: rose, description: 'A sensual floral wrapped in soft evening warmth.', characteristics: [{ label: 'Floral', icon: 'flower-2' }, { label: 'Evening', icon: 'moon-star' }, { label: 'Sweet', icon: 'candy' }] },
+  { type: 'product', id: 'oud', name: 'Oud Impérial', category: 'Men', family: 'Woody · Spiced', price: 890, discount: 0, image: noir, description: 'A majestic spiced oud for truly grand entrances.', characteristics: [{ label: 'Oriental', icon: 'flame' }, { label: 'Woody', icon: 'tree-pine' }, { label: 'Occasion', icon: 'gem' }, { label: 'Winter', icon: 'snowflake' }] },
+  { type: 'product', id: 'soleil', name: 'Soleil Doré', category: 'Unisex', family: 'Amber · Radiant', price: 620, discount: 0, image: ambre, description: 'A radiant amber glow, warm as afternoon sun.', characteristics: [{ label: 'Summer', icon: 'sun' }, { label: 'Daytime', icon: 'sunrise' }, { label: 'Sweet', icon: 'candy' }] },
+  { type: 'product', id: 'jardin', name: 'Jardin Secret', category: 'Women', family: 'Fresh · Floral', price: 560, discount: 0, image: vert, description: 'A secret garden of crisp, green floral freshness.', characteristics: [{ label: 'Fresh', icon: 'sparkles' }, { label: 'Floral', icon: 'flower-2' }, { label: 'Summer', icon: 'sun' }] },
   { type: 'offer', id: 'signature', name: 'Your signature, for less.', description: '30% off selected fragrances', kind: 'percentage' },
   { type: 'offer', id: 'trio', name: 'Good things come in threes.', description: 'Buy 2, get your third fragrance free', kind: 'bundle' },
   { type: 'offer', id: 'moment', name: 'A little luxury. A limited moment.', description: 'The signature selection · Until 31 October', kind: 'limited' },
 ] as const;
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; notes: readonly string[] };
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: readonly Characteristic[] };
 export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited' };
 export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
 export type StoreData = { products: Product[]; offers: Offer[]; settings: StoreSettings };
