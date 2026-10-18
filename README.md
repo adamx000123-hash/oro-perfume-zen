@@ -57,3 +57,14 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Vercel deployment
+
+This app reads the live catalog from the same Supabase project used by the Admin dashboard. In the Vercel project settings, add these Environment Variables for **Production, Preview, and Development**, then redeploy:
+
+- `SUPABASE_URL`
+- `SUPABASE_PUBLISHABLE_KEY`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+Use the values from the connected Supabase project; never commit `.env`. If these variables are missing in production, the app intentionally shows an empty catalog instead of the bundled demo perfumes, so deleted Admin products cannot reappear.

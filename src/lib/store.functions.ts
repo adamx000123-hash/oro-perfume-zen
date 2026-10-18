@@ -3,11 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 import { FALLBACK_STORE, parseProductPresentation, type Offer, type StoreData } from '@/lib/catalog';
 
+const EMPTY_STORE: StoreData = { products: [], offers: [], settings: FALLBACK_STORE.settings };
+const productionStore = () => process.env['VERCEL'] === '1' || process.env['NODE_ENV'] === 'production';
+
 // Public read of the catalog managed from the admin dashboard. Falls back to the built-in catalog.
 export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): Promise<StoreData> => {
   const key = process.env['SUPABASE_PUBLISHABLE_KEY'];
   const url = process.env['SUPABASE_URL'];
-  if (!key || !url) return FALLBACK_STORE;
+  if (!key || !url) {
+    console.error('[Store data] Missing SUPABASE_URL or SUPABASE_PUBLISHABLE_KEY. Configure them in Vercel.');
+    return productionStore() ? EMPTY_STORE : FALLBACK_STORE;
+  }
   const db = createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
     global: { fetch: (input, init) => {
@@ -31,6 +37,6 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
     };
   } catch (error) {
     console.error('Store data unavailable', error);
-    return FALLBACK_STORE;
+    return productionStore() ? EMPTY_STORE : FALLBACK_STORE;
   }
 });
