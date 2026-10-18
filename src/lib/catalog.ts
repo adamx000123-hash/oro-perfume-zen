@@ -9,6 +9,8 @@ export const WHATSAPP_NUMBER = '';
 export const INSTAGRAM_URL = '';
 export const OFFER_END = '2026-11-01T00:00:00Z';
 export const DELIVERY_CITY = 'Nador';
+export const PRODUCT_HASH_PREFIX = '#perfume/';
+export const productHash = (id: string) => `${PRODUCT_HASH_PREFIX}${encodeURIComponent(id)}`;
 
 // Fragrance characteristic badges. Icons are Lucide icon names; unknown values fall back to Sparkles.
 export type Characteristic = { label: string; icon: string };

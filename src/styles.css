@@ -339,6 +339,7 @@ footer { padding-top:50px; }
 .size-options button { border-radius:0; background:transparent; box-shadow:none; }
 .size-options .selected-size { border-color:var(--foreground); background:var(--secondary); }
 .detail-purchase { display:flex; justify-content:space-between; align-items:center; margin:20px 0; }
+.detail-actions { display:grid; gap:10px; }
 .quantity-control { display:flex; align-items:center; border:1px solid var(--border); width:max-content; }
 .quantity-control button { border-radius:0; width:38px; }
 .quantity-control span { min-width:25px; text-align:center; font-size:13px; }
