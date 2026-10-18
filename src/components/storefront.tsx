@@ -1,8 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Heart, Menu, MessageCircle, Minus, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Truck, Wallet, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Heart, Menu, MessageCircle, Minus, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Truck, Wallet, X, icons } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FALLBACK_STORE, resolveImage, money, totals, unitPrice, orderMessage, DELIVERY_CITY, type Product, type CartItem, type StoreData } from '@/lib/catalog';
+import { FALLBACK_STORE, resolveImage, money, totals, unitPrice, orderMessage, DELIVERY_CITY, type Characteristic, type Product, type CartItem, type StoreData } from '@/lib/catalog';
+
+// Renders a characteristic badge; unknown icon names fall back to Sparkles.
+function CharBadge({ characteristic }: { characteristic: Characteristic }) {
+  const key = characteristic.icon.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('') as keyof typeof icons;
+  const Icon = icons[key] ?? Sparkles;
+  return <span className="char-badge"><Icon size={13} strokeWidth={1.8} />{characteristic.label}</span>;
+}
 import { supabase } from '@/integrations/supabase/client';
 import hero from '@/assets/oro-hero.jpg';
 
