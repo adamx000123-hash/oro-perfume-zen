@@ -11,12 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { compressImage } from '@/lib/admin';
-import { BUILT_IN_IMAGES, CHARACTERISTIC_OPTIONS, resolveImage, type Characteristic } from '@/lib/catalog';
+import { BUILT_IN_IMAGES, CHARACTERISTIC_OPTIONS, DEFAULT_PRODUCT_DISPLAY, parseProductPresentation, resolveImage, serializeProductPresentation, type Characteristic, type ProductDisplay } from '@/lib/catalog';
 
 export const Route = createFileRoute('/_authenticated/admin/perfumes')({ component: Perfumes });
 
-type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: Characteristic[]; visible: boolean; sort: number };
-const empty: Product = { id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', description: '', characteristics: [], visible: true, sort: 0 };
+type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: Characteristic[]; display: ProductDisplay; visible: boolean; sort: number };
+const empty: Product = { id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', description: '', characteristics: [], display: DEFAULT_PRODUCT_DISPLAY, visible: true, sort: 0 };
 const CATEGORY_ORDER = ['Men', 'Women', 'Unisex'];
 
 // Fragrances are listed grouped by type so each family is easy to find at a glance.
@@ -33,12 +33,12 @@ function Perfumes() {
   const { data: products = [] } = useQuery({ queryKey: ['admin', 'products'], queryFn: async () => {
     const { data, error } = await supabase.from('products').select('*').order('sort').order('created_at');
     if (error) throw error;
-    return data as unknown as Product[];
+    return (data as unknown as Array<Record<string, unknown>>).map(row => ({ ...row, ...parseProductPresentation(row.characteristics) })) as Product[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
 
   const save = useMutation({ mutationFn: async (p: Product) => {
-    const row = { name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: p.image, description: p.description, characteristics: p.characteristics, visible: p.visible, sort: p.sort };
+    const row = { name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: p.image, description: p.description, characteristics: serializeProductPresentation(p.characteristics, p.display), visible: p.visible, sort: p.sort };
     const { error } = p.id && products.some(x => x.id === p.id)
       ? await supabase.from('products').update(row).eq('id', p.id)
       : await supabase.from('products').insert({ ...row, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
@@ -63,6 +63,7 @@ function Perfumes() {
       name: String(f.get('name')), category: String(f.get('category')), family: String(f.get('family')),
       price: Number(f.get('price')), discount: Number(f.get('discount') || 0), sort: Number(f.get('sort') || 0),
       description: String(f.get('description') ?? ''),
+      display: { ...editing.display, sizes: (() => { const sizes = String(f.get('sizes') ?? '').split(',').map(value => Number(value.trim())).filter(value => Number.isFinite(value) && value > 0); return sizes.length ? sizes : editing.display.sizes; })() },
     });
   }
 
@@ -112,6 +113,7 @@ function Perfumes() {
         {editing && <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" name="name" defaultValue={editing.name} required /></div>
           <div className="space-y-2"><Label htmlFor="description">Short description</Label><Textarea id="description" name="description" defaultValue={editing.description} rows={2} maxLength={160} placeholder="A short, elegant description…" /></div>
+          <div className="rounded-md border p-3 space-y-3"><p className="text-sm font-medium">Shop information</p><label className="flex items-center justify-between gap-3 text-sm"><span>Show description</span><Switch checked={editing.display.showDescription} onCheckedChange={value => setEditing({ ...editing, display: { ...editing.display, showDescription: value } })} /></label><label className="flex items-center justify-between gap-3 text-sm"><span>Show price</span><Switch checked={editing.display.showPrice} onCheckedChange={value => setEditing({ ...editing, display: { ...editing.display, showPrice: value } })} /></label><label className="flex items-center justify-between gap-3 text-sm"><span>Show size</span><Switch checked={editing.display.showSize} onCheckedChange={value => setEditing({ ...editing, display: { ...editing.display, showSize: value } })} /></label><div className="space-y-2"><Label htmlFor="sizes">Sizes in ml</Label><Input id="sizes" name="sizes" defaultValue={editing.display.sizes.join(', ')} placeholder="50, 100" /><p className="text-xs text-muted-foreground">Separate sizes with commas, for example: 30, 50, 100</p></div></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Category</Label><Select name="category" defaultValue={editing.category}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['Men', 'Women', 'Unisex'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label htmlFor="family">Family</Label><Input id="family" name="family" defaultValue={editing.family} placeholder="Woody · Intense" /></div>

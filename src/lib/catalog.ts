@@ -44,7 +44,23 @@ export const CATALOG = [
   { type: 'offer', id: 'trio', name: 'Good things come in threes.', description: 'Buy 2, get your third fragrance free', kind: 'bundle' },
   { type: 'offer', id: 'moment', name: 'A little luxury. A limited moment.', description: 'The signature selection · Until 31 October', kind: 'limited' },
 ] as const;
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: readonly Characteristic[] };
+export type ProductDisplay = { showDescription: boolean; showPrice: boolean; showSize: boolean; sizes: readonly number[] };
+export const DEFAULT_PRODUCT_DISPLAY: ProductDisplay = { showDescription: true, showPrice: true, showSize: true, sizes: [50, 100] };
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: readonly Characteristic[]; display?: ProductDisplay };
+export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay } {
+  if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
+  if (value && typeof value === 'object') {
+    const record = value as { items?: unknown; display?: Partial<ProductDisplay> };
+    const items = Array.isArray(record.items) ? record.items as Characteristic[] : [];
+    const display = record.display ?? {};
+    const sizes = Array.isArray(display.sizes) ? display.sizes.map(Number).filter(size => Number.isFinite(size) && size > 0) : DEFAULT_PRODUCT_DISPLAY.sizes;
+    return { characteristics: items, display: { showDescription: display.showDescription !== false, showPrice: display.showPrice !== false, showSize: display.showSize !== false, sizes: sizes.length ? sizes : DEFAULT_PRODUCT_DISPLAY.sizes } };
+  }
+  return { characteristics: [], display: DEFAULT_PRODUCT_DISPLAY };
+}
+export function serializeProductPresentation(characteristics: readonly Characteristic[], display: ProductDisplay) {
+  return { items: characteristics, display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
+}
 export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited' };
 export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
 export type StoreData = { products: Product[]; offers: Offer[]; settings: StoreSettings };

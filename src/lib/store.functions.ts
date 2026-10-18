@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
-import { FALLBACK_STORE, type Offer, type StoreData } from '@/lib/catalog';
+import { FALLBACK_STORE, parseProductPresentation, type Offer, type StoreData } from '@/lib/catalog';
 
 // Public read of the catalog managed from the admin dashboard. Falls back to the built-in catalog.
 export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): Promise<StoreData> => {
@@ -25,7 +25,7 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
     ]);
     if (products.error || offers.error || settings.error) throw products.error ?? offers.error ?? settings.error;
     return {
-      products: products.data as unknown as StoreData['products'],
+      products: (products.data ?? []).map(row => ({ ...row, ...parseProductPresentation(row.characteristics) })) as StoreData['products'],
       offers: offers.data as Offer[],
       settings: settings.data ? { whatsappNumber: settings.data.whatsapp_number.replace(/\D/g, ''), instagramUrl: settings.data.instagram_url, offerEnd: settings.data.offer_end } : FALLBACK_STORE.settings,
     };
