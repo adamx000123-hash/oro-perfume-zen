@@ -19,7 +19,7 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
   });
   try {
     const [products, offers, settings] = await Promise.all([
-      db.from('products').select('id,name,category,family,price,discount,image,notes').eq('visible', true).order('sort').order('created_at'),
+      db.from('products').select('id,name,category,family,price,discount,image,description,characteristics').eq('visible', true).order('sort').order('created_at'),
       db.from('offers').select('id,label,name,description,kind').eq('active', true).order('sort').order('created_at'),
       db.from('site_settings').select('whatsapp_number,instagram_url,offer_end').eq('id', 1).maybeSingle(),
     ]);
