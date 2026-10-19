@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 
-export const Route = createFileRoute('/_authenticated/admin/offers')({ component: Offers });
+export const Route = createFileRoute('/_authenticated/admin/offers')({ head: () => ({ meta: [{ title: 'Offers — ORO PARFUME Admin' }, { name: "description", content: 'Manage ORO PARFUME fragrance offers.' }, { property: "og:title", content: 'Offers — ORO PARFUME Admin' }, { property: "og:description", content: 'Manage ORO PARFUME fragrance offers.' }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: Offers });
 
 type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; active: boolean; sort: number };
 const empty: Offer = { id: '', label: '', name: '', description: '', kind: 'percentage', active: true, sort: 0 };
