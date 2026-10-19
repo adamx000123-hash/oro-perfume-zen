@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
-import { FALLBACK_STORE, parseProductPresentation, type Offer, type StoreData } from '@/lib/catalog';
+import { FALLBACK_STORE, parseFragranceProfile, parseProductPresentation, type Offer, type StoreData } from '@/lib/catalog';
 
 const EMPTY_STORE: StoreData = { products: [], offers: [], settings: FALLBACK_STORE.settings };
 const productionStore = () => process.env['VERCEL'] === '1' || process.env['NODE_ENV'] === 'production';
@@ -25,13 +25,13 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
   });
   try {
     const [products, offers, settings] = await Promise.all([
-      db.from('products').select('id,name,category,family,price,discount,image,description,characteristics').eq('visible', true).order('sort').order('created_at'),
+      db.from('products').select('id,name,category,family,price,discount,image,description,characteristics,main_accords,when_to_wear').eq('visible', true).order('sort').order('created_at'),
       db.from('offers').select('id,label,name,description,kind').eq('active', true).order('sort').order('created_at'),
       db.from('site_settings').select('whatsapp_number,instagram_url,offer_end').eq('id', 1).maybeSingle(),
     ]);
     if (products.error || offers.error || settings.error) throw products.error ?? offers.error ?? settings.error;
     return {
-      products: (products.data ?? []).map(row => ({ ...row, ...parseProductPresentation(row.characteristics) })) as StoreData['products'],
+      products: (products.data ?? []).map(row => ({ ...row, ...parseProductPresentation(row.characteristics), ...parseFragranceProfile(row.main_accords, row.when_to_wear) })) as StoreData['products'],
       offers: offers.data as Offer[],
       settings: settings.data ? { whatsappNumber: settings.data.whatsapp_number.replace(/\D/g, ''), instagramUrl: settings.data.instagram_url, offerEnd: settings.data.offer_end } : FALLBACK_STORE.settings,
     };

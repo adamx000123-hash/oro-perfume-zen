@@ -46,7 +46,35 @@ export const CATALOG = [
 ] as const;
 export type ProductDisplay = { showDescription: boolean; showPrice: boolean; showSize: boolean; sizes: readonly number[] };
 export const DEFAULT_PRODUCT_DISPLAY: ProductDisplay = { showDescription: true, showPrice: true, showSize: true, sizes: [50, 100] };
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: readonly Characteristic[]; display?: ProductDisplay };
+export const ACCORD_COLORS = ['citrus', 'fresh', 'woody', 'sweet', 'floral', 'spicy'] as const;
+export const WEAR_OPTIONS = ['Winter', 'Spring', 'Summer', 'Fall', 'Day', 'Night'] as const;
+export type AccordColor = typeof ACCORD_COLORS[number];
+export type MainAccord = { name: string; color: AccordColor; percentage: number | null };
+export type WhenToWear = Partial<Record<typeof WEAR_OPTIONS[number], number | null>>;
+export type FragranceProfile = { mainAccords: MainAccord[]; whenToWear: WhenToWear };
+export const validPercentage = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100;
+export function validateFragranceProfile(profile: FragranceProfile) {
+  for (const accord of profile.mainAccords) {
+    if (!accord.name.trim() || accord.name.length > 60 || !ACCORD_COLORS.includes(accord.color)) throw new Error('Each accord needs a name and color.');
+    if (accord.percentage !== null && !validPercentage(accord.percentage)) throw new Error('Percentages must be between 0 and 100.');
+  }
+  for (const [key, value] of Object.entries(profile.whenToWear)) {
+    if (!WEAR_OPTIONS.some(option => option === key) || (value !== null && !validPercentage(value))) throw new Error('Percentages must be between 0 and 100.');
+  }
+}
+export function parseFragranceProfile(accords: unknown, wear: unknown): FragranceProfile {
+  const mainAccords: MainAccord[] = [];
+  if (Array.isArray(accords)) for (const item of accords) {
+    if (item && typeof item.name === 'string' && item.name.trim() && ACCORD_COLORS.includes(item.color) && (item.percentage === null || validPercentage(item.percentage))) mainAccords.push({ name: item.name, color: item.color, percentage: item.percentage });
+  }
+  const whenToWear: WhenToWear = {};
+  if (wear && typeof wear === 'object') for (const option of WEAR_OPTIONS) {
+    const value = (wear as Record<string, unknown>)[option];
+    if (value === null || validPercentage(value)) whenToWear[option] = value;
+  }
+  return { mainAccords, whenToWear };
+}
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear };
 export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay } {
   if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
   if (value && typeof value === 'object') {
@@ -59,7 +87,7 @@ export function parseProductPresentation(value: unknown): { characteristics: Cha
   return { characteristics: [], display: DEFAULT_PRODUCT_DISPLAY };
 }
 export function serializeProductPresentation(characteristics: readonly Characteristic[], display: ProductDisplay) {
-  return { items: characteristics, display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
+  return { items: [...characteristics], display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
 }
 export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited' };
 export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
