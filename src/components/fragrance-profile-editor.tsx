@@ -6,7 +6,7 @@ import { ACCORD_COLORS, WEAR_OPTIONS, type FragranceProfile } from '@/lib/catalo
 
 export function FragranceProfileEditor({ value, onChange }: { value: FragranceProfile; onChange: (value: FragranceProfile) => void }) {
   const update = (index: number, patch: Partial<FragranceProfile['mainAccords'][number]>) => onChange({ ...value, mainAccords: value.mainAccords.map((item, i) => i === index ? { ...item, ...patch } : item) });
-  const move = (index: number, direction: number) => { const items = [...value.mainAccords]; const target = index + direction; if (target < 0 || target >= items.length) return; [items[index], items[target]] = [items[target], items[index]]; onChange({ ...value, mainAccords: items }); };
+  const move = (index: number, direction: number) => { const items = [...value.mainAccords]; const target = index + direction; const current = items[index]; const other = items[target]; if (!current || !other) return; items[index] = other; items[target] = current; onChange({ ...value, mainAccords: items }); };
   return <div className="profile-editor space-y-5">
     <section className="space-y-3" aria-label="Main Accords editor"><div className="flex items-center justify-between"><h3 className="text-xl">Main Accords</h3><Button type="button" variant="outline" size="sm" onClick={() => onChange({ ...value, mainAccords: [...value.mainAccords, { name: '', color: 'citrus', percentage: null }] })}><Plus size={15}/>Add accord</Button></div>
       <datalist id="accord-names">{['Citrus', 'Fresh', 'Woody', 'Sweet', 'Floral', 'Spicy'].map(name => <option key={name} value={name}/>)}</datalist>
