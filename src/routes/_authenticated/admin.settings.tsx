@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 
-export const Route = createFileRoute('/_authenticated/admin/settings')({ component: Settings });
+export const Route = createFileRoute('/_authenticated/admin/settings')({ head: () => ({ meta: [{ title: 'Contact links — ORO PARFUME Admin' }, { name: "description", content: 'Manage ORO PARFUME contact links.' }, { property: "og:title", content: 'Contact links — ORO PARFUME Admin' }, { property: "og:description", content: 'Manage ORO PARFUME contact links.' }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: Settings });
 
 function Settings() {
   const queryClient = useQueryClient();

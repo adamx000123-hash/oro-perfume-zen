@@ -1,4 +1,6 @@
 # ORO PARFUME
+- [ ] Add optional Main Accords and When to Wear using the existing database and admin permissions.
+- [ ] Verify saving, editing, accord deletion and phone/desktop display; synchronize standalone export.
 - [x] Build branded responsive storefront and product imagery.
 - [x] Implement filters, product details, saved cart, offers and WhatsApp checkout.
 - [x] Test shopping flow and screen sizes; provide single HTML export.

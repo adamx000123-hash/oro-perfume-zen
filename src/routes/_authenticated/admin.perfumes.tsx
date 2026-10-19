@@ -10,13 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { FragranceProfileEditor } from '@/components/fragrance-profile-editor';
 import { compressImage } from '@/lib/admin';
-import { BUILT_IN_IMAGES, CHARACTERISTIC_OPTIONS, DEFAULT_PRODUCT_DISPLAY, parseProductPresentation, resolveImage, serializeProductPresentation, type Characteristic, type ProductDisplay } from '@/lib/catalog';
+import { BUILT_IN_IMAGES, parseFragranceProfile, validateFragranceProfile, type FragranceProfile, CHARACTERISTIC_OPTIONS, DEFAULT_PRODUCT_DISPLAY, parseProductPresentation, resolveImage, serializeProductPresentation, type Characteristic, type ProductDisplay } from '@/lib/catalog';
 
-export const Route = createFileRoute('/_authenticated/admin/perfumes')({ component: Perfumes });
+export const Route = createFileRoute('/_authenticated/admin/perfumes')({ head: () => ({ meta: [{ title: 'Perfumes — ORO PARFUME Admin' }, { name: 'description', content: 'Manage ORO PARFUME fragrances and scent profiles.' }, { property: 'og:title', content: 'Perfumes — ORO PARFUME Admin' }, { property: 'og:description', content: 'Manage fragrances and scent profiles.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }), component: Perfumes });
 
-type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: Characteristic[]; display: ProductDisplay; visible: boolean; sort: number };
-const empty: Product = { id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', description: '', characteristics: [], display: DEFAULT_PRODUCT_DISPLAY, visible: true, sort: 0 };
+type Product = FragranceProfile & { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: Characteristic[]; display: ProductDisplay; visible: boolean; sort: number };
+const empty: Product = { mainAccords: [], whenToWear: {}, id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', description: '', characteristics: [], display: DEFAULT_PRODUCT_DISPLAY, visible: true, sort: 0 };
 const CATEGORY_ORDER = ['Men', 'Women', 'Unisex'];
 
 // Fragrances are listed grouped by type so each family is easy to find at a glance.
@@ -33,12 +34,13 @@ function Perfumes() {
   const { data: products = [] } = useQuery({ queryKey: ['admin', 'products'], queryFn: async () => {
     const { data, error } = await supabase.from('products').select('*').order('sort').order('created_at');
     if (error) throw error;
-    return (data as unknown as Array<Record<string, unknown>>).map(row => ({ ...row, ...parseProductPresentation(row.characteristics) })) as Product[];
+    return (data ?? []).map(row => ({ ...row, ...parseProductPresentation(row.characteristics), ...parseFragranceProfile(row.main_accords, row.when_to_wear) })) as Product[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
 
   const save = useMutation({ mutationFn: async (p: Product) => {
-    const row = { name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: p.image, description: p.description, characteristics: serializeProductPresentation(p.characteristics, p.display), visible: p.visible, sort: p.sort };
+    validateFragranceProfile(p);
+    const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: p.image, description: p.description, characteristics: serializeProductPresentation(p.characteristics, p.display), visible: p.visible, sort: p.sort };
     const { error } = p.id && products.some(x => x.id === p.id)
       ? await supabase.from('products').update(row).eq('id', p.id)
       : await supabase.from('products').insert({ ...row, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
@@ -129,6 +131,7 @@ function Perfumes() {
               })}
             </div>
           </div>
+          <FragranceProfileEditor value={editing} onChange={profile => setEditing({ ...editing, ...profile })}/>
           <div className="space-y-2"><Label>Photo</Label>
             <div className="flex items-center gap-3"><img src={resolveImage(editing.image)} alt="" className="h-16 w-16 rounded object-cover" />
               <div className="space-y-2">
@@ -138,6 +141,7 @@ function Perfumes() {
             </div>
           </div>
           <label className="flex items-center gap-2 text-sm"><Switch checked={editing.visible} onCheckedChange={v => setEditing({ ...editing, visible: v })} /> Visible in the shop</label>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save perfume'}</Button>
         </form>}
       </DialogContent>

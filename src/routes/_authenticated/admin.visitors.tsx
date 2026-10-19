@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLiveVisitors } from '@/lib/admin';
 
-export const Route = createFileRoute('/_authenticated/admin/visitors')({ component: Visitors });
+export const Route = createFileRoute('/_authenticated/admin/visitors')({ head: () => ({ meta: [{ title: 'Visitors — ORO PARFUME Admin' }, { name: "description", content: 'View ORO PARFUME visitor statistics.' }, { property: "og:title", content: 'Visitors — ORO PARFUME Admin' }, { property: "og:description", content: 'View ORO PARFUME visitor statistics.' }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: Visitors });
 
 function Visitors() {
   const live = useLiveVisitors();

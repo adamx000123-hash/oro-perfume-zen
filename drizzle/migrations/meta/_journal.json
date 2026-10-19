@@ -15,6 +15,13 @@
       "when": 1792284221746,
       "tag": "0001_product_description_characteristics",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792406214465,
+      "tag": "0002_product_fragrance_profiles",
+      "breakpoints": true
     }
   ]
 }

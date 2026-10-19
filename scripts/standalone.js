@@ -1,21 +1,23 @@
 /* ORO PARFUME standalone interactions. STORE_DATA and WHATSAPP_NUMBER are above. */
 const products = STORE_DATA.filter(p => p.type === 'product');
+const bundleActive = STORE_DATA.some(p => p.type === 'offer' && p.kind === 'bundle');
+const display = p => p.display || {showDescription:true,showPrice:true,showSize:true,sizes:[50,100]};
 const $ = s => document.querySelector(s);
 const money = n => Math.round(n).toLocaleString('en-US') + ' MAD';
 const unit = (p, size) => Math.round(p.price * (size === 50 ? .65 : 1));
 const net = (p, size) => Math.round(unit(p, size) * (1 - p.discount / 100));
 let cart = [], category = 'All fragrances', favorites = [], favoriteOnly = false, selected = null, size = 100, quantity = 1, checkout = false;
-try { cart = JSON.parse(localStorage.getItem('oro-cart') || '[]').filter(i => products.some(p => p.id === i.id) && [50,100].includes(i.size) && Number.isInteger(i.quantity) && i.quantity > 0 && i.quantity <= 99); } catch {}
+try { cart = JSON.parse(localStorage.getItem('oro-cart') || '[]').filter(i => products.some(p => p.id === i.id) && display(products.find(p=>p.id===i.id)).sizes.includes(i.size) && Number.isInteger(i.quantity) && i.quantity > 0 && i.quantity <= 99); } catch {}
 function total() {
  let subtotal=0, productDiscount=0, prices=[];
  cart.forEach(i => {const p=products.find(p=>p.id===i.id); subtotal+=unit(p,i.size)*i.quantity; productDiscount+=(unit(p,i.size)-net(p,i.size))*i.quantity; for(let j=0;j<i.quantity;j++)prices.push(net(p,i.size));});
- prices.sort((a,b)=>a-b); const bundleDiscount=prices.slice(0,Math.floor(prices.length/3)).reduce((a,b)=>a+b,0);
+ prices.sort((a,b)=>a-b); const bundleDiscount=!bundleActive?0:prices.slice(0,Math.floor(prices.length/3)).reduce((a,b)=>a+b,0);
  return {subtotal,productDiscount,bundleDiscount,discount:productDiscount+bundleDiscount,total:subtotal-productDiscount-bundleDiscount};
 }
 function save() { try {localStorage.setItem('oro-cart',JSON.stringify(cart));} catch {} const count=cart.reduce((n,i)=>n+i.quantity,0); $('.cart-count').textContent=count; $('.cart-trigger').setAttribute('aria-label',`Open shopping bag, ${count} items`); }
 let toastTimer;
 function toast(text) {const el=$('.toast');el.textContent=text;el.classList.add('toast-visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('toast-visible'),2500);}
-function add(p,s=100,q=1) {const existing=cart.find(i=>i.id===p.id&&i.size===s);if(existing)existing.quantity=Math.min(99,existing.quantity+q);else cart.push({id:p.id,size:s,quantity:q});save();toast(p.name+' added to your bag');}
+function add(p,s=display(p).sizes[0],q=1) {const existing=cart.find(i=>i.id===p.id&&i.size===s);if(existing)existing.quantity=Math.min(99,existing.quantity+q);else cart.push({id:p.id,size:s,quantity:q});save();toast(p.name+' added to your bag');}
 function escapeHTML(text) {return String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function control(text,action,cls='',label='') {return `<button type="button" class="${cls}" data-action="${action}" ${label?`aria-label="${escapeHTML(label)}"`:''}>${text}</button>`;}
 const dialog=document.createElement('dialog');dialog.className='standalone-dialog';document.body.append(dialog);
@@ -26,9 +28,19 @@ dialog.addEventListener('cancel',()=>{document.body.style.overflow='';});
 const ICONS={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',snowflake:'<path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1L19.1 4.9"/>',sunrise:'<path d="M12 2v8M4.93 10.93l1.41 1.41M2 18h2M20 18h2M19.07 10.93l-1.41 1.41M22 22H2M8 6l4-4 4 4M16 18a4 4 0 0 0-8 0"/>','moon-star':'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M19 3v4M21 5h-4"/>',briefcase:'<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>',gem:'<path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/>','flower-2':'<path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="2"/><path d="M12 10v12"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/>','tree-pine':'<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7H17Z"/><path d="M12 22v-3"/>',sparkles:'<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4M22 5h-4"/>',flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',citrus:'<path d="M21.66 17.67a1.08 1.08 0 0 1-.04 1.6A12 12 0 0 1 4.73 2.38a1.1 1.1 0 0 1 1.61-.04z"/><path d="M19.65 15.66A8 8 0 0 1 8.35 4.34"/>',candy:'<path d="m9.5 7.5-2 2a4.95 4.95 0 1 0 7 7l2-2a4.95 4.95 0 1 0-7-7Z"/><path d="M14 6.5v10M10 7.5v10"/>'};
 function badge(c){const icon=ICONS[c.icon]||ICONS.sparkles;return `<span class="char-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>${escapeHTML(c.label)}</span>`;}
 function badges(p){return `<div class="char-badges">${(p.characteristics||[]).map(badge).join('')}</div>`;}
+function profile(p) {
+ const colors=['citrus','fresh','woody','sweet','floral','spicy'];
+ const valid=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=100;
+ const accords=(p.mainAccords||[]).filter(a=>valid(a.percentage));
+ const wear=['Winter','Spring','Summer','Fall','Day','Night'].filter(k=>valid(p.whenToWear?.[k]));
+ const meter=(name,value,cls='')=>`<div class="profile-track ${cls}" role="meter" aria-label="${escapeHTML(name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value}"><span style="width:${value}%"></span></div>`;
+ const icon={Winter:ICONS.snowflake,Spring:ICONS['flower-2'],Summer:ICONS.sun,Fall:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 2 17 2c2 2 3 7 3 10a7 7 0 0 1-9 8Z"/><path d="M2 22c0-6 6-10 12-12"/>',Day:ICONS.sun,Night:ICONS['moon-star']};
+ if(!accords.length&&!wear.length)return '';
+ return `<div class="fragrance-profile">${accords.length?`<section aria-label="Main Accords"><h3>Main Accords</h3><div class="accord-list">${accords.map(a=>`<div class="accord-item accord-${colors.includes(a.color)?a.color:'fresh'}"><div class="profile-label"><span>${escapeHTML(a.name)}</span><span>${a.percentage}%</span></div>${meter(a.name,a.percentage)}</div>`).join('')}</div></section>`:''}${wear.length?`<section aria-label="When to Wear"><h3>When to Wear</h3><div class="wear-grid">${wear.map(k=>`<div class="wear-item"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">${icon[k]}</svg><span>${k}</span><span class="wear-value">${p.whenToWear[k]}%</span>${meter(k,p.whenToWear[k])}</div>`).join('')}</div></section>`:''}</div>`;
+}
 function productDetail() {
- const p=selected;
- openPanel(p.name,`<div class="product-detail"><img src="${p.image}" alt="${p.name}"/><div><span class="eyebrow">${p.category} · EAU DE PARFUM</span><h2>${p.name}</h2><p class="detail-description">${escapeHTML(p.description||'')}</p><strong class="detail-price">${money(net(p,size))}</strong><p class="field-label">Size</p><div class="size-options">${[50,100].map(v=>control(v+' ml','size-'+v,size===v?'selected-size':'')).join('')}</div>${badges(p)}<div class="detail-purchase"><div class="quantity-control">${control('−','qty-minus','','Decrease quantity')}<span>${quantity}</span>${control('+','qty-plus','','Increase quantity')}</div></div>${control('ADD TO BAG','detail-add','primary-cta w-full')}</div></div>`);
+ const p=selected,d=display(p);
+ openPanel(escapeHTML(p.name),`<div class="product-detail"><img src="${p.image}" alt="${escapeHTML(p.name)}"/><div><span class="eyebrow">${escapeHTML(p.category)} · EAU DE PARFUM</span><h2>${escapeHTML(p.name)}</h2>${d.showDescription?`<p class="detail-description">${escapeHTML(p.description||'')}</p>`:''}${d.showPrice?`<strong class="detail-price">${money(net(p,size))}</strong>`:''}${d.showSize?`<p class="field-label">Size</p><div class="size-options">${d.sizes.map(v=>control(v+' ml','size-'+v,size===v?'selected-size':'')).join('')}</div>`:''}${badges(p)}${profile(p)}<div class="detail-purchase"><div class="quantity-control">${control('−','qty-minus','','Decrease quantity')}<span>${quantity}</span>${control('+','qty-plus','','Increase quantity')}</div></div><div class="detail-actions">${control('ADD TO BAG','detail-add','primary-cta w-full')}${control('SHARE THIS FRAGRANCE','detail-share','w-full')}</div></div></div>`);
 }
 function renderCart() {
  const t=total();let html='';
@@ -43,6 +55,7 @@ document.addEventListener('click',e=>{
  if(action==='close')close();
  else if(action==='checkout'){checkout=true;renderCart();}
  else if(action==='back'){checkout=false;renderCart();}
+ else if(action==='detail-share'){const url=location.href.split('#')[0]+'#perfume/'+encodeURIComponent(selected.id);if(navigator.share)navigator.share({title:selected.name,url}).catch(()=>{});else navigator.clipboard.writeText(url).then(()=>toast('Fragrance link copied'));}
  else if(action==='detail-add'){add(selected,size,quantity);close();}
  else if(action.startsWith('size-')){size=Number(action.split('-')[1]);productDetail();}
  else if(action==='qty-minus'){quantity=Math.max(1,quantity-1);productDetail();}
@@ -54,14 +67,16 @@ $('.floating-whatsapp').onclick=()=>contact();
 $('.footer-links button').onclick=()=>contact();
 $('.header-search').onclick=()=>{$('#perfumes').scrollIntoView();$('#fragrance-search').focus({preventScroll:true});};
 const cards=Array.from(document.querySelectorAll('.product-card'));
-cards.forEach((card,i)=>{const p=products[i];card.querySelectorAll('.product-image a,.product-name').forEach(a=>a.onclick=e=>{e.preventDefault();selected=p;size=100;quantity=1;productDetail();});card.querySelector('.add-button').onclick=()=>add(p);card.querySelector('.product-heart').onclick=()=>{favorites.includes(p.id)?favorites=favorites.filter(id=>id!==p.id):favorites.push(p.id);card.querySelector('.product-heart').classList.toggle('favorite-active',favorites.includes(p.id));filter();};});
+cards.forEach((card,i)=>{const p=products[i];card.querySelectorAll('.product-image a,.product-name').forEach(a=>a.onclick=e=>{e.preventDefault();selected=p;size=display(p).sizes[0];quantity=1;history.replaceState(null,'','#perfume/'+encodeURIComponent(p.id));productDetail();});card.querySelector('.add-button').onclick=()=>add(p);card.querySelector('.product-heart').onclick=()=>{favorites.includes(p.id)?favorites=favorites.filter(id=>id!==p.id):favorites.push(p.id);card.querySelector('.product-heart').classList.toggle('favorite-active',favorites.includes(p.id));filter();};});
 function filter(){let found=0;cards.forEach((card,i)=>{const p=products[i];const visible=(category==='All fragrances'||p.category===category)&&(!favoriteOnly||favorites.includes(p.id))&&(p.name+' '+p.family).toLowerCase().includes($('#fragrance-search').value.toLowerCase());card.hidden=!visible;if(visible)found++;});$('.standalone-no-results').hidden=found>0;}
 const noResults=document.createElement('div');noResults.className='empty-results standalone-no-results';noResults.hidden=true;noResults.textContent='No fragrances found. Try another name or category.';$('.product-grid').after(noResults);
 document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{category=b.textContent;document.querySelectorAll('.filter').forEach(el=>el.classList.toggle('active-filter',el===b));filter();});
 $('#fragrance-search').oninput=filter;
 document.querySelector('[aria-label="Show favorite fragrances"]').onclick=e=>{favoriteOnly=!favoriteOnly;e.currentTarget.classList.toggle('favorite-active',favoriteOnly);filter();$('#perfumes').scrollIntoView();};
 $('.mobile-menu').onclick=()=>{let nav=$('.mobile-nav');if(nav){nav.remove();return;}nav=document.createElement('nav');nav.className='mobile-nav';nav.setAttribute('aria-label','Mobile navigation');nav.innerHTML=[['Home','home'],['Perfumes','perfumes'],['Offers','offers'],['About','about'],['Contact','contact']].map(([name,id])=>`<a href="#${id}">${name} ↗</a>`).join('');nav.onclick=()=>nav.remove();$('.site-header').append(nav);};
-function countdown(){let seconds=Math.max(0,Math.floor((new Date(OFFER_END)-Date.now())/1000));$('.countdown').innerHTML=seconds===0?'Offer ended':[Math.floor(seconds/86400),Math.floor(seconds/3600)%24,Math.floor(seconds/60)%60,seconds%60].map((v,i)=>`<span><b>${String(v).padStart(2,'0')}</b><small>${['DAYS','HRS','MIN','SEC'][i]}</small></span>`).join('');}
+function countdown(){if(!$('.countdown'))return;let seconds=Math.max(0,Math.floor((new Date(OFFER_END)-Date.now())/1000));$('.countdown').innerHTML=seconds===0?'Offer ended':[Math.floor(seconds/86400),Math.floor(seconds/3600)%24,Math.floor(seconds/60)%60,seconds%60].map((v,i)=>`<span><b>${String(v).padStart(2,'0')}</b><small>${['DAYS','HRS','MIN','SEC'][i]}</small></span>`).join('');}
 countdown();setInterval(countdown,1000);
 const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');observer.unobserve(e.target);}}),{threshold:.08});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 save();
+function openFromHash(){if(!location.hash.startsWith('#perfume/'))return;const p=products.find(p=>p.id===decodeURIComponent(location.hash.slice(9)));if(p){selected=p;size=display(p).sizes[0];quantity=1;productDetail();}}
+window.addEventListener('hashchange',openFromHash);openFromHash();

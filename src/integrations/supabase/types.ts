@@ -57,11 +57,13 @@ export type Database = {
           family: string
           id: string
           image: string
+          main_accords: Json
           name: string
           notes: string[]
           price: number
           sort: number
           visible: boolean
+          when_to_wear: Json
         }
         Insert: {
           category?: string
@@ -72,11 +74,13 @@ export type Database = {
           family?: string
           id: string
           image?: string
+          main_accords?: Json
           name: string
           notes?: string[]
           price?: number
           sort?: number
           visible?: boolean
+          when_to_wear?: Json
         }
         Update: {
           category?: string
@@ -87,11 +91,13 @@ export type Database = {
           family?: string
           id?: string
           image?: string
+          main_accords?: Json
           name?: string
           notes?: string[]
           price?: number
           sort?: number
           visible?: boolean
+          when_to_wear?: Json
         }
         Relationships: []
       }
