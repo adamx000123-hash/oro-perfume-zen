@@ -564,3 +564,36 @@ strong, b { font-weight:600; }
 .char-badge svg { color: var(--gold); }
 .detail-description { font-size: 15px; line-height: 1.7; color: var(--muted-foreground); margin: 10px 0 14px; }
 .detail-price { display: block; font-size: 20px; font-weight: 500; font-variant-numeric: lining-nums tabular-nums; margin-bottom: 14px; }
+
+/* Optional scent profiles: scoped palette leaves the store unchanged. */
+:root, .dark {
+  --accord-citrus: oklch(.73 .14 91);
+  --accord-fresh: oklch(.64 .095 191);
+  --accord-woody: oklch(.52 .068 65);
+  --accord-sweet: oklch(.68 .11 25);
+  --accord-floral: oklch(.65 .1 350);
+  --accord-spicy: oklch(.6 .12 43);
+}
+.accord-citrus { --accord-color:var(--accord-citrus); }
+.accord-fresh { --accord-color:var(--accord-fresh); }
+.accord-woody { --accord-color:var(--accord-woody); }
+.accord-sweet { --accord-color:var(--accord-sweet); }
+.accord-floral { --accord-color:var(--accord-floral); }
+.accord-spicy { --accord-color:var(--accord-spicy); }
+.fragrance-profile { margin-top:18px; display:grid; gap:18px; min-width:0; }
+.fragrance-profile section { min-width:0; }
+.fragrance-profile h3 { font-size:23px; margin-bottom:11px; }
+.accord-list { display:grid; gap:10px; }
+.profile-label { display:flex; justify-content:space-between; gap:10px; font-size:12px; margin-bottom:5px; }
+.profile-label span:first-child { overflow-wrap:anywhere; }
+.profile-label span:last-child { flex-shrink:0; font-variant-numeric:tabular-nums; }
+.profile-track { width:100%; height:9px; border-radius:6px; overflow:hidden; background:var(--secondary); }
+.profile-track>span { display:block; height:100%; border-radius:inherit; background:var(--accord-color,var(--gold)); }
+.wear-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px 10px; }
+.wear-item { display:flex; flex-direction:column; align-items:center; min-width:0; gap:5px; font-size:12px; }
+.wear-item svg { color:var(--gold); flex-shrink:0; }
+.wear-value { color:var(--muted-foreground); font-size:11px; font-variant-numeric:tabular-nums; }
+.wear-item .profile-track { height:5px; }
+.accord-swatch span { display:block; width:20px; height:20px; border-radius:50%; background:var(--accord-color); }
+.accord-swatch[aria-pressed="true"] { outline:1px solid var(--foreground); outline-offset:-2px; }
+.product-detail>div { min-width:0; }
