@@ -42,10 +42,18 @@ function Perfumes() {
     validateFragranceProfile(p);
     const images = p.images?.length ? p.images : [p.image];
     const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: images[0], images, description: p.description, notes: p.notes, characteristics: serializeProductPresentation(p.characteristics, p.display), visible: p.visible, sort: p.sort };
-    const { error } = p.id && products.some(x => x.id === p.id)
-      ? await supabase.from('products').update(row).eq('id', p.id)
-      : await supabase.from('products').insert({ ...row, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
-    if (error) throw error;
+    const saveRow = async (value: typeof row) => p.id && products.some(x => x.id === p.id)
+      ? await supabase.from('products').update(value).eq('id', p.id)
+      : await supabase.from('products').insert({ ...value, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
+    let result = await saveRow(row);
+    // Older projects may not have run the gallery migration yet; save the cover using the legacy schema.
+    if (result.error && /images|column/i.test(result.error.message)) {
+      const { images: _images, ...legacyRow } = row;
+      result = p.id && products.some(x => x.id === p.id)
+        ? await supabase.from('products').update(legacyRow).eq('id', p.id)
+        : await supabase.from('products').insert({ ...legacyRow, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
+    }
+    if (result.error) throw result.error;
   }, onSuccess: () => { setEditing(null); setError(''); refresh(); }, onError: e => setError(e.message) });
 
   const remove = useMutation({ mutationFn: async (id: string) => {
