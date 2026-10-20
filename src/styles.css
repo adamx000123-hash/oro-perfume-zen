@@ -713,3 +713,5 @@ strong, b { font-weight:600; }
   .discount-badge { min-height: 20px; padding-inline: 5px; font-size: 9px; }
   .product-order-link { min-height: 48px; font-size: 10px; }
 }
+.toast-success { background: var(--whatsapp); color: white; }
+.toast-success button { color: white; text-decoration: underline; }

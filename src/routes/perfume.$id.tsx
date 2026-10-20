@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { FragranceProfile } from "@/components/fragrance-profile";
@@ -10,7 +10,7 @@ import {
   productImages,
   resolveImage,
   productPriceBreakdown,
-  type CartItem,
+  ORDER_HASH_PREFIX,
   type Product,
 } from "@/lib/catalog";
 import { storeQuery } from "@/routes/index";
@@ -21,20 +21,6 @@ export const Route = createFileRoute("/perfume/$id")({
   component: PerfumeDetails,
 });
 
-function addToSavedCart(id: string, size: number) {
-  try {
-    const saved: CartItem[] = JSON.parse(localStorage.getItem("oro-cart") ?? "[]");
-    const existing = saved.find((item) => item.id === id && item.size === size);
-    const next = existing
-      ? saved.map((item) =>
-          item === existing ? { ...item, quantity: Math.min(99, item.quantity + 1) } : item,
-        )
-      : [...saved, { id, size, quantity: 1 }];
-    localStorage.setItem("oro-cart", JSON.stringify(next));
-  } catch {
-    localStorage.setItem("oro-cart", JSON.stringify([{ id, size, quantity: 1 }]));
-  }
-}
 
 function ProductGallery({ product }: { product: Product }) {
   const images = productImages(product);
@@ -101,9 +87,9 @@ function PerfumeDetails() {
               {product.discount > 0 && <s className="original-price">{money(productPriceBreakdown(product, size).original)}</s>}
               <strong className="detail-current-price">{money(productPriceBreakdown(product, size).current)}</strong>
             </div>
-            <Button className="primary-cta" onClick={() => addToSavedCart(product.id, size)}>
-              <Plus size={17} /> Add to bag
-            </Button>
+            <Link to="/" hash={`${ORDER_HASH_PREFIX.slice(1)}${encodeURIComponent(product.id)}`} className="primary-cta detail-order-button">
+              <ShoppingBag size={17} /> ORDER NOW
+            </Link>
             <Link to="/" hash="perfumes" className="detail-continue">
               <ShoppingBag size={16} /> Continue shopping
             </Link>

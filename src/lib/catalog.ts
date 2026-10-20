@@ -10,6 +10,7 @@ export const INSTAGRAM_URL = '';
 export const OFFER_END = '2026-11-01T00:00:00Z';
 export const DELIVERY_CITY = 'Nador';
 export const PRODUCT_HASH_PREFIX = '#perfume/';
+export const ORDER_HASH_PREFIX = '#order/';
 export const productHash = (id: string) => `${PRODUCT_HASH_PREFIX}${encodeURIComponent(id)}`;
 
 // Fragrance characteristic badges. Icons are Lucide icon names; unknown values fall back to Sparkles.
@@ -132,9 +133,35 @@ export function totals(cart: CartItem[], products: Product[] = PRODUCTS, bundleA
   return { subtotal, productDiscount, bundleDiscount, discount, total: subtotal - discount };
 }
 export function orderMessage(cart: CartItem[], customer: { name: string; phone: string; city: string; address: string }, products: Product[] = PRODUCTS, bundleActive = true) {
-  const total = totals(cart, products, bundleActive);
-  return ['ORO PARFUME — New order', '', ...cart.map(item => {
-    const p = products.find(product => product.id === item.id);
-    return p ? `${p.name} · ${item.size} ml × ${item.quantity} — ${money(Math.round(unitPrice(p, item.size) * (1 - p.discount / 100)) * item.quantity)}` : '';
-  }), '', `Subtotal: ${money(total.subtotal)}`, `Discount: ${money(total.discount)}`, `Total: ${money(total.total)}`, 'Delivery area: Nador only — fee confirmed on WhatsApp', '', `Full name: ${customer.name}`, `Phone: ${customer.phone}`, `City: ${customer.city}`, `Address: ${customer.address}`, '', 'Payment: cash on delivery or as agreed on WhatsApp. Delivery is available in Nador only.'].join('\n');
+  const summary = totals(cart, products, bundleActive);
+  const items = cart.flatMap(item => {
+    const product = products.find(candidate => candidate.id === item.id);
+    if (!product) return [];
+    const amount = Math.round(unitPrice(product, item.size) * (1 - product.discount / 100)) * item.quantity;
+    return [
+      `• ${product.name} · ${item.size} ml × ${item.quantity} — ${money(amount)}`,
+      `  🔗 https://oro-perfume-zen.lovable.app/perfume/${encodeURIComponent(product.id)}`,
+    ];
+  });
+  return [
+    '🛍️ *ORO PARFUME — New order*',
+    '',
+    '🌸 *Products*',
+    ...items,
+    '',
+    '💰 *Order summary*',
+    `Subtotal: ${money(summary.subtotal)}`,
+    `🎁 Discounts: −${money(summary.discount)}`,
+    `✅ *Total: ${money(summary.total)}*`,
+    '',
+    '🚚 Delivery: Nador only — fee confirmed on WhatsApp',
+    '',
+    '👤 *Customer details*',
+    `🧑 Full name: ${customer.name}`,
+    `📱 Phone: ${customer.phone}`,
+    `📍 City: ${customer.city}`,
+    `🏠 Address: ${customer.address}`,
+    '',
+    '💵 Payment: cash on delivery or as agreed on WhatsApp.',
+  ].join('\n');
 }
