@@ -697,3 +697,19 @@ strong, b { font-weight:600; }
 }
 
 .detail-size-label { color: var(--muted-foreground); font-size: 11px; white-space: nowrap; }
+
+/* Make product price and discount easy to scan at a glance. */
+.product-card-price { align-items: center; }
+.price-values { justify-content: flex-end; gap: 7px; }
+.product-card .product-card-price .product-price { color: var(--foreground); font-size: clamp(20px, 2.4vw, 27px); font-weight: 700; line-height: 1.1; }
+.original-price { font-size: 14px; }
+.discount-badge { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 7px; background: var(--gold-soft); color: var(--foreground); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.product-order-link { width: 100%; min-height: 50px; border: 0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.product-order-link svg { width: 17px; height: 17px; }
+@media (max-width: 767px) {
+  .price-values { gap: 5px; }
+  .product-card .product-card-price .product-price { font-size: clamp(17px, 4.5vw, 22px); }
+  .original-price { font-size: 11px; }
+  .discount-badge { min-height: 20px; padding-inline: 5px; font-size: 9px; }
+  .product-order-link { min-height: 48px; font-size: 10px; }
+}
