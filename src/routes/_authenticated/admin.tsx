@@ -38,7 +38,7 @@ function AdminLayout() {
   return <div className="admin-shell min-h-screen bg-background text-foreground md:flex">
     <aside className="border-b bg-card md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0 md:border-b-0 md:border-r">
       <div className="flex items-center justify-between p-4 md:block md:p-6"><p className="font-serif text-2xl">ORO<span className="text-accent">✦</span> <span className="font-sans text-xs uppercase tracking-widest text-muted-foreground">Admin</span></p></div>
-      <nav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col md:px-3" aria-label="Admin navigation">
+      <nav className="admin-navigation flex flex-wrap gap-1 px-2 pb-2 md:flex-col md:flex-nowrap md:px-3" aria-label="Admin navigation">
         {nav.map(({ to, label, icon: Icon }) => <Link key={to} to={to} activeOptions={{ exact: true }} className="flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground" activeProps={{ className: 'bg-muted !text-foreground font-medium' }}><Icon size={16} />{label}</Link>)}
         <a href="/" target="_blank" rel="noreferrer" className="flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"><ExternalLink size={16} />View shop</a>
         <Button variant="ghost" className="shrink-0 justify-start gap-2 px-3 text-sm font-normal text-muted-foreground" onClick={signOut}><LogOut size={16} />Sign out</Button>

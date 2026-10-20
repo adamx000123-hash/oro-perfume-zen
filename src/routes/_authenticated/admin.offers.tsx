@@ -86,12 +86,12 @@ function Offers() {
   }
 
   return <div className="space-y-6">
-    <div className="flex items-center justify-between">
+    <div className="admin-page-heading flex items-center justify-between">
       <div><h1 className="font-serif text-4xl">Offers</h1><p className="text-muted-foreground">Turn offers on or off, edit them or add new ones.</p></div>
       <Button onClick={() => { setError(''); setEditing({ ...empty, sort: offers.length }); }}><Plus size={16} /> Add offer</Button>
     </div>
     {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-    <div className="space-y-3">{offers.map(o => <div key={o.id} className="flex items-center gap-4 rounded-lg border bg-card p-4">
+    <div className="space-y-3">{offers.map(o => <div key={o.id} className="admin-offer-row flex items-center gap-4 rounded-lg border bg-card p-4">
       {o.images?.[0] && <img src={o.images[0]} alt="" className="h-16 w-24 shrink-0 rounded object-cover" />}<div className="min-w-0 flex-1"><p className="text-xs uppercase tracking-widest text-muted-foreground">{o.label} · {o.kind}</p><p className="font-medium">{o.name}</p><p className="text-sm text-muted-foreground">{o.description}</p></div>
       <Switch checked={o.active} onCheckedChange={() => toggle.mutate(o)} aria-label={`Activate ${o.name}`} />
       <Button variant="ghost" size="icon" onClick={() => { setError(''); setEditing(o); }} aria-label={`Edit ${o.name}`}><Pencil size={15} /></Button>
@@ -99,7 +99,7 @@ function Offers() {
     </div>)}</div>
 
     <Dialog open={!!editing} onOpenChange={open => !open && setEditing(null)}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="admin-dialog-content max-h-[90dvh] overflow-y-auto sm:max-w-lg">
         <DialogHeader><DialogTitle>{editing && offers.some(x => x.id === editing.id) ? 'Edit offer' : 'New offer'}</DialogTitle></DialogHeader>
         {editing && <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2"><Label htmlFor="label">Small label</Label><Input id="label" name="label" defaultValue={editing.label} placeholder="THE SIGNATURE EDIT" /></div>

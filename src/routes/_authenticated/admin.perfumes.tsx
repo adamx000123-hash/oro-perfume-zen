@@ -107,7 +107,7 @@ function Perfumes() {
   const groups = groupByCategory(products);
 
   return <div className="space-y-6">
-    <div className="flex items-center justify-between">
+    <div className="admin-page-heading flex items-center justify-between">
       <div><h1 className="font-serif text-4xl">Perfumes</h1><p className="text-muted-foreground">Add, edit, hide or remove fragrances. Changes appear on the shop immediately.</p></div>
       <Button onClick={() => { setError(''); setEditing({ ...empty, sort: products.length }); }}><Plus size={16} /> Add perfume</Button>
     </div>
@@ -120,7 +120,7 @@ function Perfumes() {
         <h2 id={`group-${group.category}`} className="font-serif text-2xl">{group.category}</h2>
         <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{group.items.length} {group.items.length === 1 ? 'fragrance' : 'fragrances'}</span>
       </div>
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      <div className="admin-perfumes-table overflow-x-auto rounded-lg border bg-card">
         <table className="w-full text-sm">
           <thead><tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground"><th className="p-3">Perfume</th><th className="p-3">Family</th><th className="p-3">Price</th><th className="p-3">Discount</th><th className="p-3">Visible</th><th className="p-3" /></tr></thead>
           <tbody>{group.items.map(p => <tr key={p.id} className="border-b last:border-0">
