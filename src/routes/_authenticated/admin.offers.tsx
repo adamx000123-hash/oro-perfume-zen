@@ -35,7 +35,12 @@ function Offers() {
       ? await supabase.from('offers').update(row).eq('id', o.id)
       : await supabase.from('offers').insert(row);
     if (error) throw error;
-  }, onSuccess: () => { setEditing(null); setError(''); refresh(); }, onError: e => setError(e.message) });
+  }, onSuccess: () => { setEditing(null); setError(''); refresh(); }, onError: e => {
+    const message = e instanceof Error ? e.message : String(e);
+    setError(/images|column|schema cache/i.test(message)
+      ? 'The database is missing the offer images field. Run drizzle/migrations/0004_offer_images.sql once in Supabase → SQL Editor, then save again.'
+      : message);
+  } });
 
   const remove = useMutation({ mutationFn: async (id: string) => {
     const { error } = await supabase.from('offers').delete().eq('id', id);
@@ -53,7 +58,7 @@ function Offers() {
     setUploading(true);
     setError('');
     try {
-      const uploaded = await Promise.all(Array.from(files).map(file => compressImage(file, 1600)));
+      const uploaded = await Promise.all(Array.from(files).map(file => compressImage(file, 900)));
       setEditing(current => current ? { ...current, images: [...(current.images ?? []), ...uploaded] } : current);
     } catch {
       setError('Could not process one of the images. Please try another image.');
