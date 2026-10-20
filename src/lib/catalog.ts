@@ -97,7 +97,7 @@ export function parseProductPresentation(value: unknown): { characteristics: Cha
 export function serializeProductPresentation(characteristics: readonly Characteristic[], display: ProductDisplay, images: readonly string[] = []) {
   return { items: [...characteristics], images: [...images], display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
 }
-export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; images?: string[] };
+export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; images?: string[]; product_ids?: string[] };
 export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
 export type StoreData = { products: Product[]; offers: Offer[]; settings: StoreSettings };
 // Bundled photos can be referenced by key from the admin dashboard; other values are uploaded image URLs.
@@ -111,7 +111,7 @@ export const PRODUCTS: Product[] = CATALOG.filter(item => item.type === 'product
 const OFFER_LABELS = ['THE SIGNATURE EDIT', 'THE PERFECT TRIO', 'ONLY FOR A MOMENT'];
 export const OFFERS: Offer[] = CATALOG.filter(item => item.type === 'offer').map((o, i) => ({ id: o.id, label: OFFER_LABELS[i] ?? '', name: o.name, description: o.description, kind: o.kind }));
 export const FALLBACK_STORE: StoreData = { products: PRODUCTS, offers: OFFERS, settings: { whatsappNumber: WHATSAPP_NUMBER, instagramUrl: INSTAGRAM_URL, offerEnd: OFFER_END } };
-export type CartItem = { id: string; size: number; quantity: number };
+export type CartItem = { id: string; size: number; quantity: number; offerId?: string; offerName?: string };
 export const money = (value: number) => `${Math.round(value).toLocaleString('en-US')} MAD`;
 export function unitPrice(product: Product, size: number) { return Math.round(product.price * (size === 50 ? 0.65 : 1)); }
 export function productPriceBreakdown(product: Product, size: number) {
@@ -147,6 +147,7 @@ export function orderMessage(cart: CartItem[], customer: { name: string; phone: 
     return [
       `• ${product.name} · ${item.size} ml × ${item.quantity} — ${money(amount)}`,
       `  🔗 https://oro-perfume-zen.lovable.app/perfume/${encodeURIComponent(product.id)}`,
+      ...(item.offerName ? [`  🎁 Offer: ${item.offerName}`] : []),
     ];
   });
   return [

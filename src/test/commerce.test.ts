@@ -30,6 +30,11 @@ describe('ORO shopping rules', () => {
     const message = orderMessage([{ id: 'rose', size: 100, quantity: 2 }], { name: 'Test Customer', phone: '0612345678', city: 'Nador', address: '12 Test Street' });
     for (const value of ['Rose Éternelle · 100 ml × 2 — 1,180 MAD', 'Total: 1,180 MAD', 'Full name: Test Customer', 'Phone: 0612345678', 'City: Nador', 'Address: 12 Test Street', 'cash on delivery', 'Nador only']) expect(message).toContain(value);
   });
+  it('identifies the originating offer for products added from an offer banner', () => {
+    const message = orderMessage([{ id: 'noir', size: 50, quantity: 1, offerId: 'summer-offer', offerName: 'Summer Signature Offer' }], { name: 'Test Customer', phone: '0612345678', city: 'Nador', address: '12 Test Street' });
+    expect(message).toContain('Noir Absolu · 50 ml × 1');
+    expect(message).toContain('🎁 Offer: Summer Signature Offer');
+  });
   it('formats WhatsApp orders with product links, totals, customer details and clear emoji labels', () => {
     const message = orderMessage([{ id: 'noir', size: 50, quantity: 1 }], { name: 'Test Customer', phone: '0612345678', city: 'Nador', address: '12 Test Street' });
     for (const value of ['🛍️ *ORO PARFUME — New order*', 'Noir Absolu · 50 ml × 1', 'https://oro-perfume-zen.lovable.app/perfume/noir', '✅ *Total:', '🧑 Full name: Test Customer', '📱 Phone: 0612345678', '🏠 Address: 12 Test Street']) expect(message).toContain(value);

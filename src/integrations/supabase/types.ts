@@ -21,6 +21,7 @@ export type Database = {
           description: string
           id: string
           images: string[]
+          product_ids: string[]
           kind: string
           label: string
           name: string
@@ -32,6 +33,7 @@ export type Database = {
           description?: string
           id?: string
           images?: string[]
+          product_ids?: string[]
           kind?: string
           label?: string
           name: string
@@ -43,6 +45,7 @@ export type Database = {
           description?: string
           id?: string
           images?: string[]
+          product_ids?: string[]
           kind?: string
           label?: string
           name?: string

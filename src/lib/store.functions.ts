@@ -29,17 +29,20 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
     const products = productsWithGallery.error
       ? await db.from('products').select('id,name,category,family,price,discount,image,description,notes,characteristics,main_accords,when_to_wear,created_at').eq('visible', true).order('sort').order('created_at')
       : productsWithGallery;
-    const [offersWithImages, settings] = await Promise.all([
-      db.from('offers').select('id,label,name,description,kind,images').eq('active', true).order('sort').order('created_at'),
+    const [offersWithProducts, settings] = await Promise.all([
+      db.from('offers').select('id,label,name,description,kind,images,product_ids').eq('active', true).order('sort').order('created_at'),
       db.from('site_settings').select('whatsapp_number,instagram_url,offer_end').eq('id', 1).maybeSingle(),
     ]);
+    const offersWithImages = offersWithProducts.error && /product_ids|column|schema cache/i.test(offersWithProducts.error.message)
+      ? await db.from('offers').select('id,label,name,description,kind,images').eq('active', true).order('sort').order('created_at')
+      : offersWithProducts;
     const offers = offersWithImages.error && /images|column|schema cache/i.test(offersWithImages.error.message)
       ? await db.from('offers').select('id,label,name,description,kind').eq('active', true).order('sort').order('created_at')
       : offersWithImages;
     if (products.error || offers.error || settings.error) throw products.error ?? offers.error ?? settings.error;
     return {
       products: (products.data ?? []).map(row => { const presentation = parseProductPresentation(row.characteristics); return { ...row, ...presentation, images: presentation.images?.length ? presentation.images : row.images?.length ? row.images : [row.image], ...parseFragranceProfile(row.main_accords, row.when_to_wear) }; }) as StoreData['products'],
-      offers: (offers.data ?? []).map(row => ({ ...row, images: 'images' in row && Array.isArray(row.images) ? row.images : [] })) as Offer[],
+      offers: (offers.data ?? []).map(row => ({ ...row, images: 'images' in row && Array.isArray(row.images) ? row.images : [], product_ids: 'product_ids' in row && Array.isArray(row.product_ids) ? row.product_ids : [] })) as Offer[],
       settings: settings.data ? { whatsappNumber: settings.data.whatsapp_number.replace(/\D/g, ''), instagramUrl: settings.data.instagram_url, offerEnd: settings.data.offer_end } : FALLBACK_STORE.settings,
     };
   } catch (error) {
