@@ -34,14 +34,14 @@ function Perfumes() {
   const { data: products = [] } = useQuery({ queryKey: ['admin', 'products'], queryFn: async () => {
     const { data, error } = await supabase.from('products').select('*').order('sort').order('created_at');
     if (error) throw error;
-    return (data ?? []).map(row => ({ ...row, images: row.images?.length ? row.images : [row.image], ...parseProductPresentation(row.characteristics), ...parseFragranceProfile(row.main_accords, row.when_to_wear) })) as Product[];
+    return (data ?? []).map(row => { const presentation = parseProductPresentation(row.characteristics); return { ...row, ...presentation, images: presentation.images?.length ? presentation.images : row.images?.length ? row.images : [row.image], ...parseFragranceProfile(row.main_accords, row.when_to_wear) }; }) as Product[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
 
   const save = useMutation({ mutationFn: async (p: Product) => {
     validateFragranceProfile(p);
     const images = p.images?.length ? p.images : [p.image];
-    const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: images[0], images, description: p.description, notes: p.notes, characteristics: serializeProductPresentation(p.characteristics, p.display), visible: p.visible, sort: p.sort };
+    const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: images[0], images, description: p.description, notes: p.notes, characteristics: serializeProductPresentation(p.characteristics, p.display, images), visible: p.visible, sort: p.sort };
     const saveRow = async (value: typeof row) => p.id && products.some(x => x.id === p.id)
       ? await supabase.from('products').update(value).eq('id', p.id)
       : await supabase.from('products').insert({ ...value, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });

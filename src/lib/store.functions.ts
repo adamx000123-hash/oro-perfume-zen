@@ -35,7 +35,7 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
     ]);
     if (products.error || offers.error || settings.error) throw products.error ?? offers.error ?? settings.error;
     return {
-      products: (products.data ?? []).map(row => ({ ...row, ...parseProductPresentation(row.characteristics), ...parseFragranceProfile(row.main_accords, row.when_to_wear) })) as StoreData['products'],
+      products: (products.data ?? []).map(row => { const presentation = parseProductPresentation(row.characteristics); return { ...row, ...presentation, images: presentation.images?.length ? presentation.images : row.images?.length ? row.images : [row.image], ...parseFragranceProfile(row.main_accords, row.when_to_wear) }; }) as StoreData['products'],
       offers: offers.data as Offer[],
       settings: settings.data ? { whatsappNumber: settings.data.whatsapp_number.replace(/\D/g, ''), instagramUrl: settings.data.instagram_url, offerEnd: settings.data.offer_end } : FALLBACK_STORE.settings,
     };

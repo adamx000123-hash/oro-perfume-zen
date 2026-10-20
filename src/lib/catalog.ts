@@ -75,19 +75,20 @@ export function parseFragranceProfile(accords: unknown, wear: unknown): Fragranc
   return { mainAccords, whenToWear };
 }
 export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear };
-export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay } {
+export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay; images?: string[] } {
   if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
   if (value && typeof value === 'object') {
-    const record = value as { items?: unknown; display?: Partial<ProductDisplay> };
+    const record = value as { items?: unknown; images?: unknown; display?: Partial<ProductDisplay> };
     const items = Array.isArray(record.items) ? record.items as Characteristic[] : [];
     const display = record.display ?? {};
     const sizes = Array.isArray(display.sizes) ? display.sizes.map(Number).filter(size => Number.isFinite(size) && size > 0) : DEFAULT_PRODUCT_DISPLAY.sizes;
-    return { characteristics: items, display: { showDescription: display.showDescription !== false, showPrice: display.showPrice !== false, showSize: display.showSize !== false, sizes: sizes.length ? sizes : DEFAULT_PRODUCT_DISPLAY.sizes } };
+    const images = Array.isArray(record.images) ? record.images.filter(image => typeof image === 'string' && image.trim()) as string[] : undefined;
+    return { characteristics: items, display: { showDescription: display.showDescription !== false, showPrice: display.showPrice !== false, showSize: display.showSize !== false, sizes: sizes.length ? sizes : DEFAULT_PRODUCT_DISPLAY.sizes }, images };
   }
   return { characteristics: [], display: DEFAULT_PRODUCT_DISPLAY };
 }
-export function serializeProductPresentation(characteristics: readonly Characteristic[], display: ProductDisplay) {
-  return { items: [...characteristics], display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
+export function serializeProductPresentation(characteristics: readonly Characteristic[], display: ProductDisplay, images: readonly string[] = []) {
+  return { items: [...characteristics], images: [...images], display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
 }
 export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited' };
 export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
