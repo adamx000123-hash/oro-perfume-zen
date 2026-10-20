@@ -16,8 +16,8 @@ import { BUILT_IN_IMAGES, parseFragranceProfile, validateFragranceProfile, type 
 
 export const Route = createFileRoute('/_authenticated/admin/perfumes')({ head: () => ({ meta: [{ title: 'Perfumes — ORO PARFUME Admin' }, { name: 'description', content: 'Manage ORO PARFUME fragrances and scent profiles.' }, { property: 'og:title', content: 'Perfumes — ORO PARFUME Admin' }, { property: 'og:description', content: 'Manage fragrances and scent profiles.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }), component: Perfumes });
 
-type Product = FragranceProfile & { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: string[]; description: string; notes?: string[]; characteristics: Characteristic[]; display: ProductDisplay; visible: boolean; sort: number };
-const empty: Product = { mainAccords: [], whenToWear: {}, id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', images: ['noir'], description: '', notes: ['', '', ''], characteristics: [], display: DEFAULT_PRODUCT_DISPLAY, visible: true, sort: 0 };
+type Product = FragranceProfile & { listing_type: 'product' | 'offer'; id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: string[]; description: string; notes?: string[]; characteristics: Characteristic[]; display: ProductDisplay; visible: boolean; sort: number };
+const empty: Product = { mainAccords: [], whenToWear: {}, id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', images: ['noir'], description: '', notes: ['', '', ''], characteristics: [], display: DEFAULT_PRODUCT_DISPLAY, visible: true, listing_type: 'product', sort: 0 };
 const CATEGORY_ORDER = ['Men', 'Women', 'Unisex'];
 
 // Fragrances are listed grouped by type so each family is easy to find at a glance.
@@ -34,25 +34,26 @@ function Perfumes() {
   const { data: products = [] } = useQuery({ queryKey: ['admin', 'products'], queryFn: async () => {
     const { data, error } = await supabase.from('products').select('*').order('sort').order('created_at');
     if (error) throw error;
-    return (data ?? []).map(row => { const presentation = parseProductPresentation(row.characteristics); return { ...row, ...presentation, images: presentation.images?.length ? presentation.images : row.images?.length ? row.images : [row.image], ...parseFragranceProfile(row.main_accords, row.when_to_wear) }; }) as Product[];
+    return (data ?? []).map(row => { const presentation = parseProductPresentation(row.characteristics); return { ...row, listing_type: row.listing_type === 'offer' ? 'offer' : 'product', ...presentation, images: presentation.images?.length ? presentation.images : row.images?.length ? row.images : [row.image], ...parseFragranceProfile(row.main_accords, row.when_to_wear) }; }) as Product[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
 
   const save = useMutation({ mutationFn: async (p: Product) => {
     validateFragranceProfile(p);
     const images = p.images?.length ? p.images : [p.image];
-    const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: images[0], images, description: p.description, notes: p.notes, characteristics: serializeProductPresentation(p.characteristics, p.display, images), visible: p.visible, sort: p.sort };
+    const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: images[0], images, description: p.description, notes: p.notes, characteristics: serializeProductPresentation(p.characteristics, p.display, images), visible: p.visible, listing_type: p.listing_type, sort: p.sort };
     const saveRow = async (value: typeof row) => p.id && products.some(x => x.id === p.id)
       ? await supabase.from('products').update(value).eq('id', p.id)
       : await supabase.from('products').insert({ ...value, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
     let result = await saveRow(row);
     // Older projects may not have run the gallery migration yet; save the cover using the legacy schema.
-    if (result.error && /images|column/i.test(result.error.message)) {
-      const { images: _images, ...legacyRow } = row;
+    if (result.error && /images|column/i.test(result.error.message) && !/listing_type/i.test(result.error.message)) {
+      const { images: _images, listing_type: _listingType, ...legacyRow } = row;
       result = p.id && products.some(x => x.id === p.id)
         ? await supabase.from('products').update(legacyRow).eq('id', p.id)
         : await supabase.from('products').insert({ ...legacyRow, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
     }
+    if (result.error && /listing_type/i.test(result.error.message)) throw new Error('Run drizzle/migrations/0006_product_listing_type.sql in Supabase → SQL Editor to save product types.');
     if (result.error) throw result.error;
   }, onSuccess: () => { setEditing(null); setError(''); refresh(); }, onError: e => setError(e.message) });
 
@@ -122,12 +123,13 @@ function Perfumes() {
       </div>
       <div className="admin-perfumes-table overflow-x-auto rounded-lg border bg-card">
         <table className="w-full text-sm">
-          <thead><tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground"><th className="p-3">Perfume</th><th className="p-3">Family</th><th className="p-3">Price</th><th className="p-3">Discount</th><th className="p-3">Visible</th><th className="p-3" /></tr></thead>
+          <thead><tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground"><th className="p-3">Perfume</th><th className="p-3">Family</th><th className="p-3">Price</th><th className="p-3">Discount</th><th className="p-3">Type</th><th className="p-3">Visible</th><th className="p-3" /></tr></thead>
           <tbody>{group.items.map(p => <tr key={p.id} className="border-b last:border-0">
             <td className="p-3"><div className="flex items-center gap-3"><img src={resolveImage(p.image)} alt="" className="h-10 w-10 rounded object-cover" /><div><p className="font-medium">{p.name}</p><p className="text-xs text-muted-foreground">{p.id}</p></div></div></td>
             <td className="p-3 text-muted-foreground">{p.family || '—'}</td>
             <td className="p-3 tabular-nums">{p.price} MAD</td>
             <td className="p-3 tabular-nums">{p.discount}%</td>
+            <td className="p-3">{p.listing_type === 'offer' ? 'Offer-only' : 'Shop product'}</td>
             <td className="p-3"><Switch checked={p.visible} onCheckedChange={() => toggle.mutate(p)} aria-label={`Show ${p.name}`} /></td>
             <td className="p-3"><div className="flex gap-1 justify-end">
               <Button variant="ghost" size="icon" onClick={() => { setError(''); setEditing(p); }} aria-label={`Edit ${p.name}`}><Pencil size={15} /></Button>
@@ -144,6 +146,7 @@ function Perfumes() {
         {editing && <form onSubmit={submit} className="space-y-4">
           <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" name="name" defaultValue={editing.name} required /></div>
           <div className="space-y-2"><Label htmlFor="description">Short description</Label><Textarea id="description" name="description" defaultValue={editing.description} rows={2} maxLength={160} placeholder="A short, elegant description…" /></div><div className="space-y-3"><Label>Notes</Label>{(['top', 'heart', 'base'] as const).map((part, index) => <div key={part} className="space-y-1"><Label htmlFor={`note-${part}`} className="text-xs text-muted-foreground">{['Top notes', 'Heart notes', 'Base notes'][index]}</Label><Input id={`note-${part}`} name={`note-${part}`} defaultValue={editing.notes?.[index] ?? ''} maxLength={120} placeholder="Leave empty if unavailable" /></div>)}</div>
+          <div className="space-y-2"><Label>Product type</Label><Select value={editing.listing_type} onValueChange={value => setEditing({ ...editing, listing_type: value as Product['listing_type'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="product">Shop product — appears in the main collection</SelectItem><SelectItem value="offer">Offer-only product — appears only inside selected offer(s)</SelectItem></SelectContent></Select><p className="text-xs text-muted-foreground">Offer-only products will not appear in the regular perfume collection. Add them to an offer from the Offers page.</p></div>
           <div className="rounded-md border p-3 space-y-3"><p className="text-sm font-medium">Shop information</p><label className="flex items-center justify-between gap-3 text-sm"><span>Show description</span><Switch checked={editing.display.showDescription} onCheckedChange={value => setEditing({ ...editing, display: { ...editing.display, showDescription: value } })} /></label><label className="flex items-center justify-between gap-3 text-sm"><span>Show price</span><Switch checked={editing.display.showPrice} onCheckedChange={value => setEditing({ ...editing, display: { ...editing.display, showPrice: value } })} /></label><label className="flex items-center justify-between gap-3 text-sm"><span>Show size</span><Switch checked={editing.display.showSize} onCheckedChange={value => setEditing({ ...editing, display: { ...editing.display, showSize: value } })} /></label><div className="space-y-2"><Label htmlFor="sizes">Sizes in ml</Label><Input id="sizes" name="sizes" defaultValue={editing.display.sizes.join(', ')} placeholder="50, 100" /><p className="text-xs text-muted-foreground">Separate sizes with commas, for example: 30, 50, 100</p></div></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Category</Label><Select name="category" defaultValue={editing.category}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['Men', 'Women', 'Unisex'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>

@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize, isNewProduct, NEW_PRODUCT_WINDOW_MS } from '@/lib/catalog';
+import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize, isNewProduct, NEW_PRODUCT_WINDOW_MS, shopProducts } from '@/lib/catalog';
 
 describe('ORO shopping rules', () => {
+  it('keeps offer-only products out of the normal collection', () => {
+    const normal = PRODUCTS[0];
+    const offerOnly = { ...normal, id: 'offer-only-test', listing_type: 'offer' as const };
+    expect(shopProducts([normal, offerOnly]).map(product => product.id)).toEqual([normal.id]);
+  });
   it('marks a product as new for exactly seven days after creation', () => {
     const now = Date.parse('2026-10-20T12:00:00.000Z');
     expect(isNewProduct(new Date(now - NEW_PRODUCT_WINDOW_MS + 1).toISOString(), now)).toBe(true);
@@ -33,7 +38,9 @@ describe('ORO shopping rules', () => {
   it('identifies the originating offer for products added from an offer banner', () => {
     const message = orderMessage([{ id: 'noir', size: 50, quantity: 1, offerId: 'summer-offer', offerName: 'Summer Signature Offer' }], { name: 'Test Customer', phone: '0612345678', city: 'Nador', address: '12 Test Street' });
     expect(message).toContain('Noir Absolu · 50 ml × 1');
-    expect(message).toContain('🎁 Offer: Summer Signature Offer');
+    expect(message).toContain('Offer: Summer Signature Offer');
+    expect(message).toContain('💰 *Total: 314 MAD*');
+    expect(message).not.toContain('https://oro-perfume-zen.lovable.app/perfume/noir');
   });
   it('formats WhatsApp orders with product links, totals, customer details and clear emoji labels', () => {
     const message = orderMessage([{ id: 'noir', size: 50, quantity: 1 }], { name: 'Test Customer', phone: '0612345678', city: 'Nador', address: '12 Test Street' });

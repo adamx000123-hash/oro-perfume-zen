@@ -81,7 +81,8 @@ export function isNewProduct(createdAt?: string | null, now = Date.now()) {
   const created = Date.parse(createdAt);
   return Number.isFinite(created) && created <= now && now - created < NEW_PRODUCT_WINDOW_MS;
 }
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear; created_at?: string };
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear; created_at?: string; listing_type?: 'product' | 'offer' };
+export const shopProducts = (products: Product[]) => products.filter(product => product.listing_type !== 'offer');
 export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay; images?: string[] } {
   if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
   if (value && typeof value === 'object') {
@@ -140,6 +141,7 @@ export function totals(cart: CartItem[], products: Product[] = PRODUCTS, bundleA
 }
 export function orderMessage(cart: CartItem[], customer: { name: string; phone: string; city: string; address: string }, products: Product[] = PRODUCTS, bundleActive = true) {
   const summary = totals(cart, products, bundleActive);
+  const offerOrder = cart.some(item => item.offerName);
   const items = cart.flatMap(item => {
     const product = products.find(candidate => candidate.id === item.id);
     if (!product) return [];
@@ -150,6 +152,19 @@ export function orderMessage(cart: CartItem[], customer: { name: string; phone: 
       ...(item.offerName ? [`  🎁 Offer: ${item.offerName}`] : []),
     ];
   });
+  if (offerOrder) {
+    const lines: string[] = ['🛍️ *ORO PARFUME — Offer order*'];
+    const offerNames = [...new Set(cart.map(item => item.offerName).filter((name): name is string => !!name))];
+    if (offerNames.length) lines.push(`🎁 *Offer: ${offerNames.join(', ')}*`);
+    cart.forEach(item => {
+      const product = products.find(candidate => candidate.id === item.id);
+      if (!product) return;
+      const amount = Math.round(unitPrice(product, item.size) * (1 - product.discount / 100)) * item.quantity;
+      lines.push(`• ${product.name} · ${item.size} ml × ${item.quantity} — ${money(amount)}`);
+    });
+    lines.push(`💰 *Total: ${money(summary.total)}*`, `👤 ${customer.name} · ${customer.phone}`, `📍 ${customer.city} · ${customer.address}`);
+    return lines.join('\n');
+  }
   return [
     '🛍️ *ORO PARFUME — New order*',
     '',

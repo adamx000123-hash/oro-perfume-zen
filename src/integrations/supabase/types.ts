@@ -64,6 +64,7 @@ export type Database = {
           id: string
           image: string
           images: string[]
+          listing_type: string
           main_accords: Json
           name: string
           notes: string[]
@@ -82,6 +83,8 @@ export type Database = {
           id: string
           image?: string
           images?: string[]
+          listing_type?: string
+          listing_type?: string
           main_accords?: Json
           name: string
           notes?: string[]

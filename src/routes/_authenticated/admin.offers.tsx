@@ -15,7 +15,7 @@ import { compressImage } from '@/lib/admin';
 export const Route = createFileRoute('/_authenticated/admin/offers')({ head: () => ({ meta: [{ title: 'Offers — ORO PARFUME Admin' }, { name: "description", content: 'Manage ORO PARFUME fragrance offers.' }, { property: "og:title", content: 'Offers — ORO PARFUME Admin' }, { property: "og:description", content: 'Manage ORO PARFUME fragrance offers.' }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: Offers });
 
 type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; active: boolean; sort: number; images: string[]; product_ids: string[] };
-type ProductChoice = { id: string; name: string; image: string; price: number; discount: number; visible: boolean };
+type ProductChoice = { id: string; name: string; image: string; price: number; discount: number; visible: boolean; listing_type: 'product' | 'offer' };
 const empty: Offer = { id: '', label: '', name: '', description: '', kind: 'percentage', active: true, sort: 0, images: [], product_ids: [] };
 
 function Offers() {
@@ -30,7 +30,7 @@ function Offers() {
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'offers'] });
   const { data: products = [] } = useQuery({ queryKey: ['admin', 'offer-products'], queryFn: async () => {
-    const { data, error } = await supabase.from('products').select('id,name,image,price,discount,visible').order('sort').order('created_at');
+    const { data, error } = await supabase.from('products').select('id,name,image,price,discount,visible,listing_type').order('sort').order('created_at');
     if (error) throw error;
     return (data ?? []) as ProductChoice[];
   } });
@@ -115,7 +115,7 @@ function Offers() {
               <input type="checkbox" checked={(editing.product_ids ?? []).includes(product.id)} onChange={event => setEditing(current => current ? { ...current, product_ids: event.target.checked ? [...(current.product_ids ?? []), product.id] : (current.product_ids ?? []).filter(id => id !== product.id) } : current)} />
               <img src={product.image} alt="" className="h-10 w-10 rounded object-cover" />
               <span className="min-w-0 flex-1 truncate text-sm">{product.name}</span>
-              <span className="text-xs text-muted-foreground">{product.visible ? 'Visible' : 'Hidden'}</span>
+              <span className="text-right text-xs text-muted-foreground">{product.listing_type === 'offer' ? 'Offer-only' : 'Shop'} · {product.visible ? 'Visible' : 'Hidden'}</span>
             </label>)}</div>}
             <p className="text-xs text-muted-foreground">{(editing.product_ids ?? []).length} product(s) selected</p>
           </div>
