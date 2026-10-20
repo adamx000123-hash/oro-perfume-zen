@@ -715,3 +715,25 @@ strong, b { font-weight:600; }
 }
 .toast-success { background: var(--whatsapp); color: white; }
 .toast-success button { color: white; text-decoration: underline; }
+
+/* Detail-page order action: keep the bag icon and label aligned as one polished button. */
+.detail-order-button {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 172px;
+  min-height: 50px;
+  padding: 14px 24px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.detail-order-button svg { display: block; flex: 0 0 auto; width: 18px; height: 18px; }
+.detail-order-button:hover { background: var(--gold); color: var(--foreground); }
+@media (max-width: 767px) {
+  .detail-order-button { min-width: 160px; min-height: 48px; }
+}
