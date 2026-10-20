@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, ShoppingBag } from "lucide-react"
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { FragranceProfile } from "@/components/fragrance-profile";
+import { ProductNewBadge } from "@/components/product-new-badge";
 import {
   DEFAULT_PRODUCT_DISPLAY,
   money,
@@ -30,6 +31,7 @@ function ProductGallery({ product }: { product: Product }) {
   return <div className="product-gallery">
     <div className="detail-page-image" onPointerDown={event => { startX.current = event.clientX; }} onPointerUp={event => { if (startX.current === null || images.length < 2) return; const delta = event.clientX - startX.current; if (Math.abs(delta) > 35) move(delta < 0 ? 1 : -1); startX.current = null; }} onPointerCancel={() => { startX.current = null; }}>
       <img src={resolveImage(images[active])} alt={`${product.name} perfume ${active + 1}`} width="800" height="800" draggable="false" />
+      <ProductNewBadge createdAt={product.created_at} />
       {images.length > 1 && <><button type="button" className="gallery-arrow gallery-prev" onClick={() => move(-1)} aria-label="Previous perfume image"><ChevronLeft size={19} /></button><button type="button" className="gallery-arrow gallery-next" onClick={() => move(1)} aria-label="Next perfume image"><ChevronRight size={19} /></button></>}
     </div>
     {images.length > 1 && <div className="gallery-thumbnails" aria-label="Perfume images">{images.map((image, index) => <button type="button" className={index === active ? 'gallery-thumbnail is-active' : 'gallery-thumbnail'} key={`${image}-${index}`} onClick={() => setActive(index)} aria-label={`Show perfume image ${index + 1}`} aria-pressed={index === active}><img src={resolveImage(image)} alt="" width="80" height="80" /></button>)}</div>}

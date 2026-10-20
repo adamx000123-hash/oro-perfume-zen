@@ -819,3 +819,11 @@ strong, b { font-weight:600; }
 @media (prefers-reduced-motion: reduce) {
   .offer-image-slide img { transition: none; }
 }
+
+.new-product-badge { position: absolute; z-index: 2; top: 12px; left: 12px; display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px; border: 1px solid color-mix(in oklch, var(--gold) 75%, white); background: rgba(17, 16, 14, .92); color: var(--gold); font-family: var(--font-sans); font-size: 9px; font-weight: 700; letter-spacing: .18em; line-height: 1; box-shadow: 0 3px 12px rgba(0,0,0,.13); }
+.product-image .new-product-badge { top: 12px; left: 12px; }
+.detail-page-image .new-product-badge { top: 18px; left: 18px; }
+@media (max-width: 767px) {
+  .product-image .new-product-badge { top: 8px; left: 8px; padding: 6px 8px; font-size: 8px; }
+  .detail-page-image .new-product-badge { top: 12px; left: 12px; }
+}

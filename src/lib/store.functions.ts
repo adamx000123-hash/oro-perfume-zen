@@ -24,10 +24,10 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
     } },
   });
   try {
-    const productsWithGallery = await db.from('products').select('id,name,category,family,price,discount,image,images,description,notes,characteristics,main_accords,when_to_wear').eq('visible', true).order('sort').order('created_at');
+    const productsWithGallery = await db.from('products').select('id,name,category,family,price,discount,image,images,description,notes,characteristics,main_accords,when_to_wear,created_at').eq('visible', true).order('sort').order('created_at');
     // Keep the shop usable while an existing Supabase project is waiting for the gallery migration.
     const products = productsWithGallery.error
-      ? await db.from('products').select('id,name,category,family,price,discount,image,description,notes,characteristics,main_accords,when_to_wear').eq('visible', true).order('sort').order('created_at')
+      ? await db.from('products').select('id,name,category,family,price,discount,image,description,notes,characteristics,main_accords,when_to_wear,created_at').eq('visible', true).order('sort').order('created_at')
       : productsWithGallery;
     const [offersWithImages, settings] = await Promise.all([
       db.from('offers').select('id,label,name,description,kind,images').eq('active', true).order('sort').order('created_at'),

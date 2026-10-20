@@ -75,7 +75,13 @@ export function parseFragranceProfile(accords: unknown, wear: unknown): Fragranc
   }
   return { mainAccords, whenToWear };
 }
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear };
+export const NEW_PRODUCT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+export function isNewProduct(createdAt?: string | null, now = Date.now()) {
+  if (!createdAt) return false;
+  const created = Date.parse(createdAt);
+  return Number.isFinite(created) && created <= now && now - created < NEW_PRODUCT_WINDOW_MS;
+}
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear; created_at?: string };
 export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay; images?: string[] } {
   if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
   if (value && typeof value === 'object') {

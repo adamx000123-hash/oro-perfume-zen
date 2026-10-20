@@ -1,7 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize } from '@/lib/catalog';
+import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize, isNewProduct, NEW_PRODUCT_WINDOW_MS } from '@/lib/catalog';
 
 describe('ORO shopping rules', () => {
+  it('marks a product as new for exactly seven days after creation', () => {
+    const now = Date.parse('2026-10-20T12:00:00.000Z');
+    expect(isNewProduct(new Date(now - NEW_PRODUCT_WINDOW_MS + 1).toISOString(), now)).toBe(true);
+    expect(isNewProduct(new Date(now - NEW_PRODUCT_WINDOW_MS).toISOString(), now)).toBe(false);
+    expect(isNewProduct(new Date(now + 1).toISOString(), now)).toBe(false);
+    expect(isNewProduct(undefined, now)).toBe(false);
+  });
   it('applies the displayed 30% fragrance discount in MAD', () => {
     expect(PRODUCTS.find(p => p.id === 'noir')?.discount).toBe(30);
     expect(totals([{ id: 'noir', size: 100, quantity: 1 }])).toMatchObject({ subtotal: 690, discount: 207, total: 483 });
