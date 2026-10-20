@@ -695,3 +695,5 @@ strong, b { font-weight:600; }
   .original-price { font-size: 11px; }
   .product-card .product-card-price .product-price { font-size: 15px; }
 }
+
+.detail-size-label { color: var(--muted-foreground); font-size: 11px; white-space: nowrap; }

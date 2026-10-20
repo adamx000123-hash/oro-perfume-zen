@@ -97,6 +97,7 @@ function PerfumeDetails() {
           <FragranceProfile product={product} />
           <div className="detail-page-buy">
             <div className="detail-price-row">
+              <span className="detail-size-label">{size} ml</span>
               {product.discount > 0 && <s className="original-price">{money(productPriceBreakdown(product, size).original)}</s>}
               <strong className="detail-current-price">{money(productPriceBreakdown(product, size).current)}</strong>
             </div>
