@@ -29,7 +29,7 @@ function Offers() {
     return (data ?? []).map(row => ({ ...row, images: row.images ?? [], product_ids: row.product_ids ?? [] })) as Offer[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'offers'] });
-  const { data: products = [] } = useQuery({ queryKey: ['admin', 'offer-products'], queryFn: async () => {
+  const { data: products = [], error: productQueryError } = useQuery({ queryKey: ['admin', 'offer-products'], queryFn: async () => {
     const { data, error } = await supabase.from('products').select('id,name,image,price,discount,visible,listing_type').order('sort').order('created_at');
     if (error) throw error;
     return (data ?? []) as ProductChoice[];
@@ -91,6 +91,7 @@ function Offers() {
       <Button onClick={() => { setError(''); setEditing({ ...empty, sort: offers.length }); }}><Plus size={16} /> Add offer</Button>
     </div>
     {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+    {productQueryError && <p className="text-sm text-destructive" role="alert">{String(productQueryError.message ?? productQueryError).includes('listing_type') ? 'Product types are not enabled in the database yet. Run drizzle/migrations/0006_product_listing_type.sql in Supabase → SQL Editor, then reload this page.' : `Could not load offer products: ${String(productQueryError.message ?? productQueryError)}`}</p>}
     <div className="space-y-3">{offers.map(o => <div key={o.id} className="admin-offer-row flex items-center gap-4 rounded-lg border bg-card p-4">
       {o.images?.[0] && <img src={o.images[0]} alt="" className="h-16 w-24 shrink-0 rounded object-cover" />}<div className="min-w-0 flex-1"><p className="text-xs uppercase tracking-widest text-muted-foreground">{o.label} · {o.kind}</p><p className="font-medium">{o.name}</p><p className="text-sm text-muted-foreground">{o.description}</p></div>
       <Switch checked={o.active} onCheckedChange={() => toggle.mutate(o)} aria-label={`Activate ${o.name}`} />
