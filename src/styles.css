@@ -788,3 +788,34 @@ strong, b { font-weight:600; }
   .offer-carousel-prev { left: 9px; }
   .offer-carousel-next { right: 9px; }
 }
+
+/* Editorial offer banner: soft champagne frame, blended edges, and slow cinematic motion. */
+.offer-image-carousel {
+  margin: 34px 0 40px;
+  padding: 7px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--gold) 40%, var(--border));
+  border-radius: 26px;
+  background: linear-gradient(135deg, color-mix(in oklch, var(--gold) 16%, var(--background)), var(--background) 48%, color-mix(in oklch, var(--gold) 9%, var(--background)));
+  box-shadow: 0 20px 55px rgba(50, 39, 19, .11), 0 3px 12px rgba(50, 39, 19, .06), inset 0 1px rgba(255,255,255,.78);
+}
+.offer-image-viewport { border-radius: 19px; scroll-snap-type: x mandatory; background: var(--background); }
+.offer-image-slide { position: relative; flex: 0 0 100%; aspect-ratio: 16 / 9; max-height: none; border-radius: 19px; background: var(--background); }
+.offer-image-slide::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(32,24,14,.08), transparent 12%, transparent 88%, rgba(32,24,14,.08)), linear-gradient(0deg, rgba(32,24,14,.11), transparent 24%); }
+.offer-image-slide img { transform: scale(1.035); filter: saturate(.94); transition: transform 1.8s cubic-bezier(.2,.7,.2,1), filter 1.8s cubic-bezier(.2,.7,.2,1); }
+.offer-image-slide.is-active img { transform: scale(1); filter: saturate(1); }
+.offer-carousel-arrow { width: 46px; height: 46px; min-height: 46px; border-color: rgba(255,255,255,.78); background: rgba(20,18,14,.48); box-shadow: 0 5px 18px rgba(0,0,0,.16); }
+.offer-carousel-arrow:hover { background: var(--gold); }
+.offer-carousel-dots { bottom: 17px; gap: 9px; }
+.offer-carousel-dots button { width: 7px; height: 7px; border: 1px solid rgba(255,255,255,.9); background: rgba(255,255,255,.58); }
+.offer-carousel-dots button.is-active { width: 24px; background: var(--gold); }
+@media (max-width: 767px) {
+  .offer-image-carousel { margin: 22px 0 28px; padding: 5px; border-radius: 19px; }
+  .offer-image-viewport, .offer-image-slide { border-radius: 14px; }
+  .offer-image-slide { aspect-ratio: 16 / 9; min-height: 0; }
+  .offer-carousel-arrow { width: 36px; height: 36px; min-height: 36px; }
+  .offer-carousel-dots { bottom: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .offer-image-slide img { transition: none; }
+}

@@ -104,7 +104,7 @@ function Offers() {
             <div className="space-y-2"><Label htmlFor="sort">Order</Label><Input id="sort" name="sort" type="number" defaultValue={editing.sort} /></div>
           </div>
           <div className="space-y-3 rounded-md border p-3">
-            <div><Label htmlFor="offer-images">Offer banner images</Label><p className="mt-1 text-xs text-muted-foreground">Upload one or more images. Any dimensions are accepted and optimized automatically; wide banners work best.</p></div>
+            <div><Label htmlFor="offer-images">Offer banner images</Label><p className="mt-1 text-xs text-muted-foreground">Upload one or more images. Recommended: 16:9 (1600 × 900 px). Any dimensions are accepted; images are optimized and cropped to fit the banner.</p></div>
             {(editing.images ?? []).length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{(editing.images ?? []).map((image, index) => <div key={`${index}-${image.slice(0, 32)}`} className="relative overflow-hidden rounded border bg-muted"><img src={image} alt={`Offer banner ${index + 1}`} className="aspect-video w-full object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute right-1 top-1 h-7 w-7" onClick={() => removeImage(index)} aria-label={`Remove banner image ${index + 1}`}><X size={14}/></Button></div>)}</div>}
             <Input id="offer-images" type="file" accept="image/*" multiple disabled={uploading} onChange={event => { void addImages(event.target.files); event.currentTarget.value = ''; }} />
             {uploading && <p className="text-xs text-muted-foreground">Optimizing images…</p>}

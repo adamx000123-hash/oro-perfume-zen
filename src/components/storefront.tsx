@@ -25,27 +25,49 @@ function Countdown({ end }: { end: string }) {
 
 function OfferImageCarousel({ images }: { images: string[] }) {
   const viewport = useRef<HTMLDivElement>(null);
+  const animationFrame = useRef<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexRef = useRef(0);
   const [paused, setPaused] = useState(false);
+  const moveTo = (next: number) => {
+    const track = viewport.current;
+    if (!track) return;
+    if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current);
+    const start = track.scrollLeft;
+    const target = next * track.clientWidth;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { track.scrollLeft = target; return; }
+    const duration = 1450;
+    let startTime: number | null = null;
+    const animate = (time: number) => {
+      if (startTime === null) startTime = time;
+      const progress = Math.min(1, (time - startTime) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      track.scrollLeft = start + (target - start) * eased;
+      if (progress < 1) animationFrame.current = requestAnimationFrame(animate);
+      else animationFrame.current = null;
+    };
+    animationFrame.current = requestAnimationFrame(animate);
+  };
   const show = (index: number) => {
     const next = (index + images.length) % images.length;
+    activeIndexRef.current = next;
     setActiveIndex(next);
-    const track = viewport.current;
-    if (track) track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+    moveTo(next);
   };
   useEffect(() => {
     if (images.length < 2 || paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const timer = window.setInterval(() => setActiveIndex(current => {
-      const next = (current + 1) % images.length;
-      const track = viewport.current;
-      if (track) track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
-      return next;
-    }), 6500);
+    const timer = window.setInterval(() => {
+      const next = (activeIndexRef.current + 1) % images.length;
+      activeIndexRef.current = next;
+      setActiveIndex(next);
+      moveTo(next);
+    }, 7200);
     return () => window.clearInterval(timer);
   }, [images.length, paused]);
+  useEffect(() => () => { if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current); }, []);
   return <div className="offer-image-carousel" aria-label="Offer banners" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false); }}>
-    <div className="offer-image-viewport" ref={viewport} onScroll={event => { const width = event.currentTarget.clientWidth; if (width) setActiveIndex(Math.min(images.length - 1, Math.round(event.currentTarget.scrollLeft / width))); }}>
-      {images.map((image, index) => <div className="offer-image-slide" key={`offer-image-${index}`}><img src={image} alt={`Offer banner ${index + 1}`} loading={index === 0 ? 'eager' : 'lazy'} /></div>)}
+    <div className="offer-image-viewport" ref={viewport} onPointerDown={() => { if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current); animationFrame.current = null; setPaused(true); }} onPointerUp={() => setPaused(false)} onPointerCancel={() => setPaused(false)} onScroll={event => { const width = event.currentTarget.clientWidth; if (width) { const index = Math.min(images.length - 1, Math.round(event.currentTarget.scrollLeft / width)); activeIndexRef.current = index; setActiveIndex(current => current === index ? current : index); } }}>
+      {images.map((image, index) => <div className={index === activeIndex ? 'offer-image-slide is-active' : 'offer-image-slide'} key={`offer-image-${index}`}><img src={image} alt={`Offer banner ${index + 1}`} loading={index === 0 ? 'eager' : 'lazy'} /></div>)}
     </div>
     {images.length > 1 && <>
       <Button type="button" variant="ghost" className="offer-carousel-arrow offer-carousel-prev" onClick={() => show(activeIndex - 1)} aria-label="Previous offer image"><ChevronLeft size={20}/></Button>
