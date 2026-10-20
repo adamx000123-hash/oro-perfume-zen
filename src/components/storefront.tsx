@@ -1,6 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowRight, ArrowUpRight, Check, ChevronDown, Heart, Menu, MessageCircle, Minus, Plus, Search, Share2, ShieldCheck, ShoppingBag, Sparkles, Truck, Trash2, Wallet, X, icons } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, Heart, Menu, MessageCircle, Minus, Plus, Search, Share2, ShieldCheck, ShoppingBag, Sparkles, Truck, Trash2, Wallet, X, icons } from 'lucide-react';
 import { FragranceProfile } from '@/components/fragrance-profile';
 import { Button } from '@/components/ui/button';
 import { FALLBACK_STORE, DEFAULT_PRODUCT_DISPLAY, resolveImage, productImages, money, totals, unitPrice, orderMessage, DELIVERY_CITY, PRODUCT_HASH_PREFIX, ORDER_HASH_PREFIX, productHash, productPriceBreakdown, defaultProductSize, type Characteristic, type Product, type CartItem, type StoreData } from '@/lib/catalog';
@@ -22,6 +22,38 @@ function Countdown({ end }: { end: string }) {
   const seconds = Math.floor((remaining ?? 0) / 1000);
   return <div className="countdown" aria-label="Offer time remaining">{remaining === 0 ? <span>Offer ended</span> : [Math.floor(seconds / 86400), Math.floor(seconds / 3600) % 24, Math.floor(seconds / 60) % 60, seconds % 60].map((v, i) => <span key={i}><b>{remaining === null ? '—' : String(v).padStart(2, '0')}</b><small>{['DAYS','HRS','MIN','SEC'][i]}</small></span>)}</div>;
 }
+
+function OfferImageCarousel({ images }: { images: string[] }) {
+  const viewport = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const show = (index: number) => {
+    const next = (index + images.length) % images.length;
+    setActiveIndex(next);
+    const track = viewport.current;
+    if (track) track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+  };
+  useEffect(() => {
+    if (images.length < 2 || paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => setActiveIndex(current => {
+      const next = (current + 1) % images.length;
+      const track = viewport.current;
+      if (track) track.scrollTo({ left: next * track.clientWidth, behavior: 'smooth' });
+      return next;
+    }), 6500);
+    return () => window.clearInterval(timer);
+  }, [images.length, paused]);
+  return <div className="offer-image-carousel" aria-label="Offer banners" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false); }}>
+    <div className="offer-image-viewport" ref={viewport} onScroll={event => { const width = event.currentTarget.clientWidth; if (width) setActiveIndex(Math.min(images.length - 1, Math.round(event.currentTarget.scrollLeft / width))); }}>
+      {images.map((image, index) => <div className="offer-image-slide" key={`offer-image-${index}`}><img src={image} alt={`Offer banner ${index + 1}`} loading={index === 0 ? 'eager' : 'lazy'} /></div>)}
+    </div>
+    {images.length > 1 && <>
+      <Button type="button" variant="ghost" className="offer-carousel-arrow offer-carousel-prev" onClick={() => show(activeIndex - 1)} aria-label="Previous offer image"><ChevronLeft size={20}/></Button>
+      <Button type="button" variant="ghost" className="offer-carousel-arrow offer-carousel-next" onClick={() => show(activeIndex + 1)} aria-label="Next offer image"><ChevronRight size={20}/></Button>
+      <div className="offer-carousel-dots">{images.map((_, index) => <button type="button" key={index} className={index === activeIndex ? 'is-active' : ''} onClick={() => show(index)} aria-label={`Show offer image ${index + 1}`} aria-current={index === activeIndex} />)}</div>
+    </>}
+  </div>;
+}
 function Panel({ open, onOpenChange, title, children, drawer = false }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; children: React.ReactNode; drawer?: boolean }) {
   return <Dialog.Root open={open} onOpenChange={onOpenChange}><Dialog.Portal><Dialog.Overlay className="panel-overlay"/><Dialog.Content className={drawer ? 'panel cart-panel' : 'panel product-panel'} aria-describedby={undefined}><div className="panel-heading"><Dialog.Title>{title}</Dialog.Title><Dialog.Close asChild><Button variant="ghost" size="icon" aria-label="Close"><X/></Button></Dialog.Close></div>{children}</Dialog.Content></Dialog.Portal></Dialog.Root>;
 }
@@ -30,6 +62,7 @@ export function Storefront({ data = FALLBACK_STORE }: { data?: StoreData }) {
   const WHATSAPP_NUMBER = settings.whatsappNumber; const INSTAGRAM_URL = settings.instagramUrl;
   const bundleActive = OFFERS.some(o => o.kind === 'bundle');
   const maxDiscount = Math.max(0, ...PRODUCTS.map(p => p.discount));
+  const offerImages = OFFERS.flatMap(offer => offer.images ?? []).filter(image => typeof image === 'string' && image.length > 0);
   // Live visitor presence and a daily visit record for the admin dashboard.
   useEffect(() => {
     if (!sessionStorage.getItem('oro-visit')) { sessionStorage.setItem('oro-visit', '1'); void supabase.from('visits').insert({}); }
@@ -103,7 +136,7 @@ export function Storefront({ data = FALLBACK_STORE }: { data?: StoreData }) {
     <main>
       <section className="hero" id="home"><img src={hero} alt="ORO amber perfumes in sunlit travertine, with a black cap and gold detailing" width="1920" height="1024" fetchPriority="high"/><div className="hero-shade"/><div className="hero-content"><div className="eyebrow"><span/>THE ART OF LEAVING AN IMPRESSION</div><h1>ORO PARFUME<span>A scent. <em>A signature.</em></span></h1><p>Extraordinary fragrances. Unforgettable moments.<br/>Discover the essence of your individuality.</p><Button asChild className="primary-cta"><a href="#perfumes">DISCOVER THE COLLECTION<ArrowRight size={17}/></a></Button><div className="hero-footnote"><span className="little-star">✦</span> Crafted for the unforgettable.</div></div><a href="#offers" className="hero-scroll">SCROLL TO DISCOVER<ChevronDown size={16}/></a><span className="hero-number">01 <span>/ 03</span></span></section>
       <section className="trust-strip" aria-label="Our promises"><span><ShieldCheck/>100% Authentic Fragrances</span><span><Truck/>Delivery in Nador only</span><span><Wallet/>Cash on Delivery</span><span><MessageCircle/>Personal WhatsApp Support</span></section>
-      <section id="offers" className="offers section-wrap"><div className="section-heading reveal"><div><div className="eyebrow">A LITTLE MORE REASON TO INDULGE</div><h2>Exceptional scents. <em>Exceptional offers.</em></h2></div><a className="text-link" href="#perfumes">Explore the collection <ArrowUpRight size={16}/></a></div><div className="offers-grid reveal">{OFFERS.map((offer, i) => <a href="#perfumes" className={`offer-card offer-${i % 3}`} key={offer.id} onClick={() => { setCategory('All fragrances'); setSearch(''); setOnlyFavorites(false); }}><span className="eyebrow">{offer.label}</span>{offer.kind === 'percentage' ? <div className="offer-value">Up to <strong>{maxDiscount || 30}<span>%</span></strong> off</div> : offer.kind === 'bundle' ? <div className="offer-value trio-value">Buy 2, <em>get 1 free.</em></div> : <Countdown end={settings.offerEnd}/>}<h3>{offer.name}</h3><div className="offer-bottom"><span>{offer.description}</span><ArrowUpRight size={19}/></div></a>)}</div><p className="offer-terms">The lowest-priced fragrance is complimentary with every three. Selected discounts apply automatically. Sample collection.</p></section>
+      <section id="offers" className="offers section-wrap"><div className="section-heading reveal"><div><div className="eyebrow">A LITTLE MORE REASON TO INDULGE</div><h2>Exceptional scents. <em>Exceptional offers.</em></h2></div><a className="text-link" href="#perfumes">Explore the collection <ArrowUpRight size={16}/></a></div>{offerImages.length > 0 && <OfferImageCarousel images={offerImages}/>}<div className="offers-grid reveal">{OFFERS.map((offer, i) => <a href="#perfumes" className={`offer-card offer-${i % 3}`} key={offer.id} onClick={() => { setCategory('All fragrances'); setSearch(''); setOnlyFavorites(false); }}><span className="eyebrow">{offer.label}</span>{offer.kind === 'percentage' ? <div className="offer-value">Up to <strong>{maxDiscount || 30}<span>%</span></strong> off</div> : offer.kind === 'bundle' ? <div className="offer-value trio-value">Buy 2, <em>get 1 free.</em></div> : <Countdown end={settings.offerEnd}/>}<h3>{offer.name}</h3><div className="offer-bottom"><span>{offer.description}</span><ArrowUpRight size={19}/></div></a>)}</div><p className="offer-terms">The lowest-priced fragrance is complimentary with every three. Selected discounts apply automatically. Sample collection.</p></section>
       <section id="perfumes" className="collection section-wrap"><div className="collection-title reveal"><div className="eyebrow">FIND THE ONE THAT FEELS LIKE YOU</div><h2>The Signature <em>Collection</em></h2><p>A world of beautiful notes. A fragrance that is uniquely yours.</p></div><div className="collection-tools"><div className="filters" aria-label="Filter by category">{['All fragrances','Women','Men','Unisex'].map(cat => <Button key={cat} variant="ghost" className={cat === category ? 'filter active-filter' : 'filter'} onClick={() => setCategory(cat)}>{cat}</Button>)}</div><label className="search-box"><Search size={17}/><input aria-label="Search fragrances" id="fragrance-search" placeholder="Search your scent…" value={search} onChange={e => setSearch(e.target.value)}/></label></div>{onlyFavorites && <div className="favorite-filter">Your favorites <Button variant="ghost" onClick={() => setOnlyFavorites(false)} aria-label="Clear favorites filter"><X size={16}/></Button></div>}<div className="product-grid">{filtered.map(p => { const detailUrl = `/perfume/${encodeURIComponent(p.id)}`; const cover = productImages(p)[0]; return <article className="product-card" key={p.id}><a className="product-image" href={detailUrl} aria-label={`View details for ${p.name}`}><img src={resolveImage(cover)} alt={`${p.name} perfume bottle`} loading="lazy" width="512" height="512"/></a><div className="product-card-copy"><a href={detailUrl} className="product-name">{p.name}</a><div className="fragrance-family">{p.family}</div><div className="product-card-price"><span className="product-size-label">{defaultProductSize(p)} ml</span><div className="price-values">{p.discount > 0 && <><span className="discount-badge">-{p.discount}%</span><s className="original-price">{money(productPriceBreakdown(p, defaultProductSize(p)).original)}</s></>}<strong className="product-price">{money(productPriceBreakdown(p, defaultProductSize(p)).current)}</strong></div></div><a className="product-order-link" href={detailUrl} aria-label={`View ${p.name} details and order`}>ORDER NOW <ArrowUpRight size={16}/></a></div></article>; })}</div>{filtered.length === 0 && <div className="empty-results"><Sparkles/><h3>No fragrances found</h3><p>Try another name or category.</p><Button variant="outline" onClick={() => { setSearch(''); setCategory('All fragrances'); setOnlyFavorites(false); }}>View all fragrances</Button></div>}<div className="collection-end"><span/> <span>YOUR NEXT SIGNATURE SCENT AWAITS</span> <span/></div></section>
       <section className="about-band" id="about"><div className="section-wrap about-inner reveal"><div><div className="eyebrow">THE ORO PROMISE</div><h2>More than a fragrance.<br/><em>A feeling that stays.</em></h2><p>We believe the most beautiful luxury is personal. From the first note to the last impression, our collection celebrates the art of finding your signature.</p></div><div className="promise-grid">{[[ShieldCheck,'Authenticity, always.','100% authentic fragrances, selected with care.'],[Truck,'From us to your doorstep.','Delivery within Nador only.'],[Wallet,'Your comfort comes first.','Cash on delivery. Simple, secure, effortless.'],[MessageCircle,'A personal touch.','Real people. Thoughtful advice. Just a message away.']].map(([Icon, title, text]) => { const FeatureIcon = Icon as typeof ShieldCheck; return <div className="promise" key={String(title)}><FeatureIcon size={25} strokeWidth={1.2}/><h3>{String(title)}</h3><p>{String(text)}</p></div>; })}</div></div></section>
     </main>

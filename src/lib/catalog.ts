@@ -91,7 +91,7 @@ export function parseProductPresentation(value: unknown): { characteristics: Cha
 export function serializeProductPresentation(characteristics: readonly Characteristic[], display: ProductDisplay, images: readonly string[] = []) {
   return { items: [...characteristics], images: [...images], display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
 }
-export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited' };
+export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; images?: string[] };
 export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
 export type StoreData = { products: Product[]; offers: Offer[]; settings: StoreSettings };
 // Bundled photos can be referenced by key from the admin dashboard; other values are uploaded image URLs.

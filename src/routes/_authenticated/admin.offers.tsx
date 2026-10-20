@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,25 +10,27 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { compressImage } from '@/lib/admin';
 
 export const Route = createFileRoute('/_authenticated/admin/offers')({ head: () => ({ meta: [{ title: 'Offers — ORO PARFUME Admin' }, { name: "description", content: 'Manage ORO PARFUME fragrance offers.' }, { property: "og:title", content: 'Offers — ORO PARFUME Admin' }, { property: "og:description", content: 'Manage ORO PARFUME fragrance offers.' }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: Offers });
 
-type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; active: boolean; sort: number };
-const empty: Offer = { id: '', label: '', name: '', description: '', kind: 'percentage', active: true, sort: 0 };
+type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; active: boolean; sort: number; images: string[] };
+const empty: Offer = { id: '', label: '', name: '', description: '', kind: 'percentage', active: true, sort: 0, images: [] };
 
 function Offers() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<Offer | null>(null);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
   const { data: offers = [] } = useQuery({ queryKey: ['admin', 'offers'], queryFn: async () => {
     const { data, error } = await supabase.from('offers').select('*').order('sort').order('created_at');
     if (error) throw error;
-    return data as Offer[];
+    return (data ?? []).map(row => ({ ...row, images: row.images ?? [] })) as Offer[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'offers'] });
 
   const save = useMutation({ mutationFn: async (o: Offer) => {
-    const row = { label: o.label, name: o.name, description: o.description, kind: o.kind, active: o.active, sort: o.sort };
+    const row = { label: o.label, name: o.name, description: o.description, kind: o.kind, active: o.active, sort: o.sort, images: o.images ?? [] };
     const { error } = o.id && offers.some(x => x.id === o.id)
       ? await supabase.from('offers').update(row).eq('id', o.id)
       : await supabase.from('offers').insert(row);
@@ -45,6 +47,26 @@ function Offers() {
     if (error) throw error;
   }, onSuccess: refresh });
 
+
+  async function addImages(files: FileList | null) {
+    if (!editing || !files?.length) return;
+    setUploading(true);
+    setError('');
+    try {
+      const uploaded = await Promise.all(Array.from(files).map(file => compressImage(file, 1600)));
+      setEditing(current => current ? { ...current, images: [...(current.images ?? []), ...uploaded] } : current);
+    } catch {
+      setError('Could not process one of the images. Please try another image.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeImage(index: number) {
+    if (!editing) return;
+    setEditing({ ...editing, images: (editing.images ?? []).filter((_, imageIndex) => imageIndex !== index) });
+  }
+
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!editing) return;
@@ -59,7 +81,7 @@ function Offers() {
     </div>
     {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
     <div className="space-y-3">{offers.map(o => <div key={o.id} className="flex items-center gap-4 rounded-lg border bg-card p-4">
-      <div className="min-w-0 flex-1"><p className="text-xs uppercase tracking-widest text-muted-foreground">{o.label} · {o.kind}</p><p className="font-medium">{o.name}</p><p className="text-sm text-muted-foreground">{o.description}</p></div>
+      {o.images?.[0] && <img src={o.images[0]} alt="" className="h-16 w-24 shrink-0 rounded object-cover" />}<div className="min-w-0 flex-1"><p className="text-xs uppercase tracking-widest text-muted-foreground">{o.label} · {o.kind}</p><p className="font-medium">{o.name}</p><p className="text-sm text-muted-foreground">{o.description}</p></div>
       <Switch checked={o.active} onCheckedChange={() => toggle.mutate(o)} aria-label={`Activate ${o.name}`} />
       <Button variant="ghost" size="icon" onClick={() => { setError(''); setEditing(o); }} aria-label={`Edit ${o.name}`}><Pencil size={15} /></Button>
       <Button variant="ghost" size="icon" onClick={() => { if (confirm(`Delete "${o.name}"?`)) remove.mutate(o.id); }} aria-label={`Delete ${o.name}`}><Trash2 size={15} /></Button>
@@ -76,8 +98,14 @@ function Offers() {
             <div className="space-y-2"><Label>Type</Label><Select name="kind" defaultValue={editing.kind}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="percentage">Percentage discount</SelectItem><SelectItem value="bundle">Buy 2 get 1</SelectItem><SelectItem value="limited">Limited time</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label htmlFor="sort">Order</Label><Input id="sort" name="sort" type="number" defaultValue={editing.sort} /></div>
           </div>
+          <div className="space-y-3 rounded-md border p-3">
+            <div><Label htmlFor="offer-images">Offer banner images</Label><p className="mt-1 text-xs text-muted-foreground">Upload one or more images. Any dimensions are accepted and optimized automatically; wide banners work best.</p></div>
+            {(editing.images ?? []).length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{(editing.images ?? []).map((image, index) => <div key={`${index}-${image.slice(0, 32)}`} className="relative overflow-hidden rounded border bg-muted"><img src={image} alt={`Offer banner ${index + 1}`} className="aspect-video w-full object-cover" /><Button type="button" variant="destructive" size="icon" className="absolute right-1 top-1 h-7 w-7" onClick={() => removeImage(index)} aria-label={`Remove banner image ${index + 1}`}><X size={14}/></Button></div>)}</div>}
+            <Input id="offer-images" type="file" accept="image/*" multiple disabled={uploading} onChange={event => { void addImages(event.target.files); event.currentTarget.value = ''; }} />
+            {uploading && <p className="text-xs text-muted-foreground">Optimizing images…</p>}
+          </div>
           <label className="flex items-center gap-2 text-sm"><Switch checked={editing.active} onCheckedChange={v => setEditing({ ...editing, active: v })} /> Active in the shop</label>
-          <Button type="submit" className="w-full" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save offer'}</Button>
+          <Button type="submit" className="w-full" disabled={save.isPending || uploading}>{save.isPending ? 'Saving…' : 'Save offer'}</Button>
         </form>}
       </DialogContent>
     </Dialog>
