@@ -737,3 +737,23 @@ strong, b { font-weight:600; }
 @media (max-width: 767px) {
   .detail-order-button { min-width: 160px; min-height: 48px; }
 }
+
+.remove-item-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid color-mix(in oklch, var(--destructive) 45%, var(--border));
+  background: color-mix(in oklch, var(--destructive) 5%, var(--background));
+  color: var(--destructive);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .18s, border-color .18s;
+}
+.remove-item-button:hover { background: color-mix(in oklch, var(--destructive) 12%, var(--background)); border-color: var(--destructive); color: var(--destructive); }
+.remove-item-button svg { flex: 0 0 auto; }
+.remove-item-button:focus-visible { outline: 2px solid var(--destructive); outline-offset: 3px; }
+@media (max-width: 767px) { .remove-item-button { min-height: 44px; padding-inline: 12px; } }
