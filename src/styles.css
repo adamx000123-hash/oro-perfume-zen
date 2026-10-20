@@ -757,3 +757,14 @@ strong, b { font-weight:600; }
 .remove-item-button svg { flex: 0 0 auto; }
 .remove-item-button:focus-visible { outline: 2px solid var(--destructive); outline-offset: 3px; }
 @media (max-width: 767px) { .remove-item-button { min-height: 44px; padding-inline: 12px; } }
+
+/* Uploaded product images: remove the built-in white mat and fill every image frame. */
+.detail-page-image { overflow: hidden; background: transparent; }
+.detail-page-image img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; padding: 0; mix-blend-mode: normal; }
+.product-image { overflow: hidden; background: transparent; }
+.product-image img { width: 100%; height: 100%; object-fit: cover; object-position: center; padding: 0; mix-blend-mode: normal; }
+.gallery-thumbnail { overflow: hidden; padding: 0; background: transparent; }
+.gallery-thumbnail img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; mix-blend-mode: normal; }
+.product-detail>img { object-fit: cover; padding: 0; mix-blend-mode: normal; }
+.admin-gallery-item { padding: 0; background: transparent; }
+.admin-gallery-item>img { object-fit: cover; mix-blend-mode: normal; }
