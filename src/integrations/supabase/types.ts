@@ -57,6 +57,7 @@ export type Database = {
           family: string
           id: string
           image: string
+          images: string[]
           main_accords: Json
           name: string
           notes: string[]
@@ -74,6 +75,7 @@ export type Database = {
           family?: string
           id: string
           image?: string
+          images?: string[]
           main_accords?: Json
           name: string
           notes?: string[]
@@ -91,6 +93,7 @@ export type Database = {
           family?: string
           id?: string
           image?: string
+          images?: string[]
           main_accords?: Json
           name?: string
           notes?: string[]

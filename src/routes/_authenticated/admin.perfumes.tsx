@@ -16,8 +16,8 @@ import { BUILT_IN_IMAGES, parseFragranceProfile, validateFragranceProfile, type 
 
 export const Route = createFileRoute('/_authenticated/admin/perfumes')({ head: () => ({ meta: [{ title: 'Perfumes — ORO PARFUME Admin' }, { name: 'description', content: 'Manage ORO PARFUME fragrances and scent profiles.' }, { property: 'og:title', content: 'Perfumes — ORO PARFUME Admin' }, { property: 'og:description', content: 'Manage fragrances and scent profiles.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }), component: Perfumes });
 
-type Product = FragranceProfile & { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; notes?: string[]; characteristics: Characteristic[]; display: ProductDisplay; visible: boolean; sort: number };
-const empty: Product = { mainAccords: [], whenToWear: {}, id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', description: '', notes: ['', '', ''], characteristics: [], display: DEFAULT_PRODUCT_DISPLAY, visible: true, sort: 0 };
+type Product = FragranceProfile & { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: string[]; description: string; notes?: string[]; characteristics: Characteristic[]; display: ProductDisplay; visible: boolean; sort: number };
+const empty: Product = { mainAccords: [], whenToWear: {}, id: '', name: '', category: 'Unisex', family: '', price: 0, discount: 0, image: 'noir', images: ['noir'], description: '', notes: ['', '', ''], characteristics: [], display: DEFAULT_PRODUCT_DISPLAY, visible: true, sort: 0 };
 const CATEGORY_ORDER = ['Men', 'Women', 'Unisex'];
 
 // Fragrances are listed grouped by type so each family is easy to find at a glance.
@@ -34,13 +34,14 @@ function Perfumes() {
   const { data: products = [] } = useQuery({ queryKey: ['admin', 'products'], queryFn: async () => {
     const { data, error } = await supabase.from('products').select('*').order('sort').order('created_at');
     if (error) throw error;
-    return (data ?? []).map(row => ({ ...row, ...parseProductPresentation(row.characteristics), ...parseFragranceProfile(row.main_accords, row.when_to_wear) })) as Product[];
+    return (data ?? []).map(row => ({ ...row, images: row.images?.length ? row.images : [row.image], ...parseProductPresentation(row.characteristics), ...parseFragranceProfile(row.main_accords, row.when_to_wear) })) as Product[];
   } });
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'products'] });
 
   const save = useMutation({ mutationFn: async (p: Product) => {
     validateFragranceProfile(p);
-    const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: p.image, description: p.description, notes: p.notes, characteristics: serializeProductPresentation(p.characteristics, p.display), visible: p.visible, sort: p.sort };
+    const images = p.images?.length ? p.images : [p.image];
+    const row = { main_accords: p.mainAccords, when_to_wear: p.whenToWear, name: p.name, category: p.category, family: p.family, price: p.price, discount: p.discount, image: images[0], images, description: p.description, notes: p.notes, characteristics: serializeProductPresentation(p.characteristics, p.display), visible: p.visible, sort: p.sort };
     const { error } = p.id && products.some(x => x.id === p.id)
       ? await supabase.from('products').update(row).eq('id', p.id)
       : await supabase.from('products').insert({ ...row, id: p.id || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') });
@@ -73,6 +74,26 @@ function Perfumes() {
     if (!editing) return;
     const has = editing.characteristics.some(c => c.label === option.label);
     setEditing({ ...editing, characteristics: has ? editing.characteristics.filter(c => c.label !== option.label) : [...editing.characteristics, option] });
+  }
+
+  async function addGalleryImages(files: FileList | null) {
+    if (!editing || !files?.length) return;
+    const uploaded = await Promise.all(Array.from(files).map(file => compressImage(file)));
+    const current = editing.images?.length ? editing.images : [editing.image];
+    setEditing({ ...editing, images: [...current, ...uploaded] });
+  }
+
+  function setCover(index: number) {
+    if (!editing) return;
+    const images = editing.images?.length ? editing.images : [editing.image];
+    setEditing({ ...editing, images: [images[index], ...images.filter((_, imageIndex) => imageIndex !== index)] });
+  }
+
+  function removeGalleryImage(index: number) {
+    if (!editing) return;
+    const images = editing.images?.length ? editing.images : [editing.image];
+    if (images.length === 1) return;
+    setEditing({ ...editing, images: images.filter((_, imageIndex) => imageIndex !== index) });
   }
 
   const groups = groupByCategory(products);
@@ -132,13 +153,9 @@ function Perfumes() {
             </div>
           </div>
           <FragranceProfileEditor value={editing} onChange={profile => setEditing({ ...editing, ...profile })}/>
-          <div className="space-y-2"><Label>Photo</Label>
-            <div className="flex items-center gap-3"><img src={resolveImage(editing.image)} alt="" className="h-16 w-16 rounded object-cover" />
-              <div className="space-y-2">
-                <Select value={BUILT_IN_IMAGES[editing.image] ? editing.image : 'custom'} onValueChange={v => v !== 'custom' && setEditing({ ...editing, image: v })}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent>{Object.keys(BUILT_IN_IMAGES).map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}<SelectItem value="custom">Uploaded</SelectItem></SelectContent></Select>
-                <Input type="file" accept="image/*" onChange={async e => { const file = e.target.files?.[0]; if (file) setEditing({ ...editing, image: await compressImage(file) }); }} />
-              </div>
-            </div>
+          <div className="space-y-3"><div><Label>Photos</Label><p className="text-xs text-muted-foreground">The first photo is the cover. Add more photos for the swipeable product gallery.</p></div>
+            <div className="admin-gallery-grid">{(editing.images?.length ? editing.images : [editing.image]).map((image, index) => <div className={index === 0 ? 'admin-gallery-item is-cover' : 'admin-gallery-item'} key={`${image}-${index}`}><img src={resolveImage(image)} alt={`${editing.name} photo ${index + 1}`} /><div className="admin-gallery-actions">{index !== 0 && <Button type="button" variant="secondary" size="sm" onClick={() => setCover(index)}>Use as cover</Button>}<Button type="button" variant="ghost" size="sm" onClick={() => removeGalleryImage(index)} disabled={index === 0 && (editing.images?.length ?? 1) === 1}>Remove</Button></div>{index === 0 && <span className="admin-gallery-cover">Cover</span>}</div>)}</div>
+            <div className="flex flex-wrap items-center gap-2"><Select value={BUILT_IN_IMAGES[editing.images?.[0] ?? editing.image] ? (editing.images?.[0] ?? editing.image) : 'custom'} onValueChange={v => v !== 'custom' && setEditing({ ...editing, image: v, images: [v, ...(editing.images ?? []).filter((_, index) => index !== 0) ] })}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent>{Object.keys(BUILT_IN_IMAGES).map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}<SelectItem value="custom">Uploaded</SelectItem></SelectContent></Select><Input type="file" accept="image/*" multiple onChange={async e => { await addGalleryImages(e.target.files); e.currentTarget.value = ''; }} /></div>
           </div>
           <label className="flex items-center gap-2 text-sm"><Switch checked={editing.visible} onCheckedChange={v => setEditing({ ...editing, visible: v })} /> Visible in the shop</label>
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}

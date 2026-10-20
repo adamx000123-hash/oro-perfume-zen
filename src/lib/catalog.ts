@@ -74,7 +74,7 @@ export function parseFragranceProfile(accords: unknown, wear: unknown): Fragranc
   }
   return { mainAccords, whenToWear };
 }
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear };
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear };
 export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay } {
   if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
   if (value && typeof value === 'object') {
@@ -95,6 +95,10 @@ export type StoreData = { products: Product[]; offers: Offer[]; settings: StoreS
 // Bundled photos can be referenced by key from the admin dashboard; other values are uploaded image URLs.
 export const BUILT_IN_IMAGES: Record<string, string> = { noir, rose, ambre, vert };
 export const resolveImage = (value: string) => BUILT_IN_IMAGES[value] ?? value;
+export const productImages = (product: Pick<Product, 'image' | 'images'>) => {
+  const gallery = (product.images ?? []).filter(image => typeof image === 'string' && image.trim());
+  return gallery.length ? gallery : [product.image];
+};
 export const PRODUCTS: Product[] = CATALOG.filter(item => item.type === 'product');
 const OFFER_LABELS = ['THE SIGNATURE EDIT', 'THE PERFECT TRIO', 'ONLY FOR A MOMENT'];
 export const OFFERS: Offer[] = CATALOG.filter(item => item.type === 'offer').map((o, i) => ({ id: o.id, label: OFFER_LABELS[i] ?? '', name: o.name, description: o.description, kind: o.kind }));
