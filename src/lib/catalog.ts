@@ -107,6 +107,13 @@ export const FALLBACK_STORE: StoreData = { products: PRODUCTS, offers: OFFERS, s
 export type CartItem = { id: string; size: number; quantity: number };
 export const money = (value: number) => `${Math.round(value).toLocaleString('en-US')} MAD`;
 export function unitPrice(product: Product, size: number) { return Math.round(product.price * (size === 50 ? 0.65 : 1)); }
+export function productPriceBreakdown(product: Product, size: number) {
+  const original = unitPrice(product, size);
+  return { original, current: Math.round(original * (1 - product.discount / 100)) };
+}
+export function defaultProductSize(product: Pick<Product, 'display'>) {
+  return product.display?.sizes[0] ?? DEFAULT_PRODUCT_DISPLAY.sizes[0] ?? 100;
+}
 export function totals(cart: CartItem[], products: Product[] = PRODUCTS, bundleActive = true) {
   let subtotal = 0, productDiscount = 0;
   const eligible: number[] = [];

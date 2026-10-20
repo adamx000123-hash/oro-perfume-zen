@@ -9,7 +9,7 @@ import {
   money,
   productImages,
   resolveImage,
-  unitPrice,
+  productPriceBreakdown,
   type CartItem,
   type Product,
 } from "@/lib/catalog";
@@ -96,9 +96,10 @@ function PerfumeDetails() {
           )}
           <FragranceProfile product={product} />
           <div className="detail-page-buy">
-            <strong>
-              {money(Math.round(unitPrice(product, size) * (1 - product.discount / 100)))}
-            </strong>
+            <div className="detail-price-row">
+              {product.discount > 0 && <s className="original-price">{money(productPriceBreakdown(product, size).original)}</s>}
+              <strong className="detail-current-price">{money(productPriceBreakdown(product, size).current)}</strong>
+            </div>
             <Button className="primary-cta" onClick={() => addToSavedCart(product.id, size)}>
               <Plus size={17} /> Add to bag
             </Button>
