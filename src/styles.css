@@ -642,3 +642,39 @@ strong, b { font-weight:600; }
 .accord-swatch span { display:block; width:20px; height:20px; border-radius:50%; background:var(--accord-color); }
 .accord-swatch[aria-pressed="true"] { outline:1px solid var(--foreground); outline-offset:-2px; }
 .product-detail>div { min-width:0; }
+
+/* Two-up fragrance cards inspired by the supplied reference, using ORO's existing ivory, black and gold palette. */
+.product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 22px; }
+.product-card { min-width: 0; border: 1px solid var(--border); background: var(--card); transition: transform .25s, box-shadow .25s; }
+.product-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-elegant); }
+.product-image { aspect-ratio: 1 / 1; border-bottom: 1px solid var(--border); }
+.product-card-copy { display: flex; flex-direction: column; align-items: stretch; padding: 15px 17px 17px; }
+.product-card .product-name { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; min-height: 2.5em; margin-top: 0; font-size: clamp(18px, 2vw, 25px); line-height: 1.22; }
+.product-card .fragrance-family { min-height: 1.4em; margin-top: 5px; }
+.product-card .product-price { margin-top: 10px; color: var(--gold); font-size: clamp(16px, 1.8vw, 21px); font-weight: 600; }
+.product-order-link { display: flex; min-height: 46px; align-items: center; justify-content: center; gap: 9px; margin-top: 13px; padding: 10px 12px; background: var(--foreground); color: var(--background); font-size: 11px; font-weight: 600; letter-spacing: .08em; transition: background .2s, color .2s; }
+.product-order-link:hover { background: var(--gold); color: var(--foreground); }
+.product-order-link svg { color: var(--gold); }
+.product-order-link:hover svg { color: var(--foreground); }
+.product-order-link:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+@media (max-width: 767px) {
+  .product-grid { gap: 18px 12px; }
+  .product-card-copy { padding: 11px 10px 12px; }
+  .product-card .product-name { font-size: clamp(16px, 4vw, 21px); }
+  .product-card .product-price { margin-top: 8px; font-size: 16px; }
+  .product-order-link { min-height: 44px; margin-top: 10px; gap: 5px; font-size: 9px; letter-spacing: .04em; }
+}
+@media (max-width: 479px) {
+  .product-grid { gap: 15px 10px; }
+  .product-card-copy { padding: 9px 8px 10px; }
+  .product-card .product-name { min-height: 2.45em; font-size: 16px; }
+  .product-card .fragrance-family { font-size: 9px; }
+  .product-card .product-price { font-size: 15px; }
+  .product-order-link { min-height: 44px; padding-inline: 5px; font-size: 8px; }
+}
+@media (max-width: 360px) {
+  .product-grid { gap: 12px 8px; }
+  .product-card-copy { padding: 8px 7px; }
+  .product-card .product-name { font-size: 15px; }
+  .product-order-link { font-size: 7px; }
+}
