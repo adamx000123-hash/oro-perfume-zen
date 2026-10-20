@@ -74,7 +74,7 @@ export function parseFragranceProfile(accords: unknown, wear: unknown): Fragranc
   }
   return { mainAccords, whenToWear };
 }
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear };
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear };
 export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay } {
   if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
   if (value && typeof value === 'object') {

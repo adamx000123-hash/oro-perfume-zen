@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as PerfumeIdRouteImport } from './routes/perfume.$id'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminOffersRouteImport } from './routes/_authenticated/admin.offers'
 import { Route as AuthenticatedAdminPerfumesRouteImport } from './routes/_authenticated/admin.perfumes'
@@ -37,6 +38,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const PerfumeIdRoute = PerfumeIdRouteImport.update({
+  id: '/perfume/$id',
+  path: '/perfume/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/perfume/$id': typeof PerfumeIdRoute
   '/admin/offers': typeof AuthenticatedAdminOffersRoute
   '/admin/perfumes': typeof AuthenticatedAdminPerfumesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/perfume/$id': typeof PerfumeIdRoute
   '/admin/offers': typeof AuthenticatedAdminOffersRoute
   '/admin/perfumes': typeof AuthenticatedAdminPerfumesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/perfume/$id': typeof PerfumeIdRoute
   '/_authenticated/admin/offers': typeof AuthenticatedAdminOffersRoute
   '/_authenticated/admin/perfumes': typeof AuthenticatedAdminPerfumesRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/perfume/$id'
     | '/admin/offers'
     | '/admin/perfumes'
     | '/admin/settings'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/perfume/$id'
     | '/admin/offers'
     | '/admin/perfumes'
     | '/admin/settings'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
+    | '/perfume/$id'
     | '/_authenticated/admin/offers'
     | '/_authenticated/admin/perfumes'
     | '/_authenticated/admin/settings'
@@ -136,6 +148,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PerfumeIdRoute: typeof PerfumeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/perfume/$id': {
+      id: '/perfume/$id'
+      path: '/perfume/$id'
+      fullPath: '/perfume/$id'
+      preLoaderRoute: typeof PerfumeIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  PerfumeIdRoute: PerfumeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

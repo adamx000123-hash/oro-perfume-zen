@@ -278,9 +278,8 @@ h2 { font-size:37px; line-height:1.2; }
 .search-box input { border:0; min-width:0; width:100%; outline:none; background:transparent; font:inherit; font-size:12px; height:36px; }
 .product-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:34px 24px; }
 .product-card { min-width:0; }
-.product-image { position:relative; background:var(--surface); aspect-ratio:1/1.06; overflow:hidden; }
-.product-image>a { display:block; height:100%; }
-.product-image img { width:100%; height:100%; object-fit:cover; transition:transform .6s; mix-blend-mode:multiply; }
+.product-image { position:relative; display:block; background:var(--surface); aspect-ratio:1/1.06; overflow:hidden; }
+.product-image img { width:100%; height:100%; object-fit:contain; padding:18px; transition:transform .6s; mix-blend-mode:multiply; }
 .product-card:hover .product-image img { transform:scale(1.045); }
 .product-badge { position:absolute; top:14px; left:14px; padding:5px 10px; font-size:10px; color:var(--background); background:var(--foreground); }
 .badge-light { background:var(--background); color:var(--muted-foreground); font-size:8px; letter-spacing:.7px; }
@@ -372,6 +371,25 @@ footer { padding-top:50px; }
 .empty-results { text-align:center; min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:15px; }
 .empty-results h3 { font-size:30px; }
 .empty-results p { color:var(--muted-foreground); }
+.detail-page { padding-block:48px 90px; }
+.detail-back { display:inline-flex; align-items:center; gap:8px; margin-bottom:28px; }
+.detail-page-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:64px; align-items:start; }
+.detail-page-image { background:var(--surface); aspect-ratio:1/1; min-width:0; }
+.detail-page-image img { width:100%; height:100%; object-fit:contain; padding:38px; mix-blend-mode:multiply; }
+.detail-page-copy { padding-top:12px; min-width:0; }
+.detail-page-copy h1 { font-size:clamp(42px,5vw,72px); margin:12px 0 8px; line-height:1; }
+.detail-page-copy h2 { font-family:var(--font-serif); font-size:25px; margin:28px 0 10px; }
+.detail-page-copy section p { color:var(--muted-foreground); font-size:14px; line-height:1.9; max-width:560px; }
+.detail-page-copy .fragrance-profile { margin-top:28px; }
+.detail-notes { display:grid; gap:14px; }
+.detail-notes h2 { margin-bottom:0; }
+.detail-notes div { border-top:1px solid var(--border); padding-top:10px; }
+.detail-notes span { color:var(--gold); font-size:9px; letter-spacing:1.5px; text-transform:uppercase; }
+.detail-notes p { margin-top:4px; }
+.detail-page-buy { display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-top:32px; padding-top:22px; border-top:1px solid var(--border); }
+.detail-page-buy strong { font-size:22px; margin-right:auto; }
+.detail-page-buy .primary-cta { min-height:46px; }
+.detail-continue { display:inline-flex; align-items:center; gap:6px; width:100%; color:var(--muted-foreground); font-size:11px; }
 .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s,transform .7s; }
 .reveal.is-visible { opacity:1; transform:none; }
 @keyframes fadeIn { from {opacity:0} to {opacity:1} }
@@ -477,6 +495,14 @@ footer { padding-top:50px; }
   .badge-light { font-size:6px; }
   .product-heart { top:0; right:0; }
   .product-image { aspect-ratio:1/1.14; }
+  .product-image img { padding:12px; }
+  .detail-page { padding-block:28px 60px; }
+  .detail-page-grid { grid-template-columns:1fr; gap:28px; }
+  .detail-page-image { max-height:420px; }
+  .detail-page-image img { padding:22px; }
+  .detail-page-copy { padding-top:0; }
+  .detail-page-copy h1 { font-size:44px; }
+  .detail-page-buy { gap:12px; }
   .collection-end { gap:10px; font-size:7px; letter-spacing:1px; }
   .collection-end>span:first-child,.collection-end>span:last-child { width:25px; }
   .about-inner { grid-template-columns:1fr; gap:35px; padding-block:42px; }

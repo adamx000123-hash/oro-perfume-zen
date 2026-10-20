@@ -1,0 +1,12 @@
+{
+  "routes": [
+    { "path": "/", "title": "ORO PARFUME" },
+    { "path": "/perfume/$id", "title": "Fragrance details" },
+    { "path": "/auth", "title": "Admin sign in" },
+    { "path": "/admin", "title": "Admin" },
+    { "path": "/admin/perfumes", "title": "Manage perfumes" },
+    { "path": "/admin/offers", "title": "Manage offers" },
+    { "path": "/admin/settings", "title": "Contact links" },
+    { "path": "/admin/visitors", "title": "Visitors" }
+  ]
+}
