@@ -68,7 +68,11 @@ BEGIN
         offer_id, source_product_id, name, category, family, price, discount, image, images,
         description, notes, characteristics, main_accords, when_to_wear, sort, created_at
       )
-      SELECT o.id, p.id, p.name, p.category, p.family, p.price, p.discount, p.image, p.images,
+      SELECT o.id, p.id, p.name, p.category, p.family, p.price, p.discount, p.image,
+             COALESCE(
+               NULLIF(ARRAY(SELECT jsonb_array_elements_text(to_jsonb(p) -> 'images')), ARRAY[]::text[]),
+               ARRAY[p.image]
+             ),
              p.description, p.notes, p.characteristics, p.main_accords, p.when_to_wear, p.sort, p.created_at
       FROM public.products p
       JOIN public.offers o ON p.id = ANY(o.product_ids)
