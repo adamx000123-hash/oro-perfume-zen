@@ -954,3 +954,34 @@ img, svg { max-width: 100%; }
   .product-card .product-order-link { min-height: 46px; font-size: 10px; }
   .product-card .fragrance-family { font-size: 10px; }
 }
+
+
+/* Perfume titles: confident weight with a restrained champagne-gold sheen. */
+.product-card .product-name,
+.detail-page-copy > h1,
+.product-detail h2,
+.offer-product-copy h3,
+.cart-item h3 {
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -.035em;
+  text-shadow: 0 1px 0 color-mix(in oklch, var(--gold) 22%, transparent),
+               0 3px 14px color-mix(in oklch, var(--gold) 12%, transparent);
+  transition: color .25s ease, text-shadow .25s ease;
+}
+.product-card .product-name:is(:hover, :focus-visible),
+.detail-page-copy > h1:is(:hover, :focus-visible),
+.product-detail h2:is(:hover, :focus-visible),
+.offer-product-copy h3:is(:hover, :focus-visible),
+.cart-item h3:is(:hover, :focus-visible) {
+  color: color-mix(in oklch, var(--foreground) 58%, var(--gold));
+  text-shadow: 0 0 16px color-mix(in oklch, var(--gold) 28%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-card .product-name,
+  .detail-page-copy > h1,
+  .product-detail h2,
+  .offer-product-copy h3,
+  .cart-item h3 { transition: none; }
+}
