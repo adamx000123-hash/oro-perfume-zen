@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize, isNewProduct, NEW_PRODUCT_WINDOW_MS, shopProducts } from '@/lib/catalog';
+import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize, isNewProduct, NEW_PRODUCT_WINDOW_MS, collectionProducts } from '@/lib/catalog';
 
 describe('ORO shopping rules', () => {
-  it('keeps offer-only products out of the normal collection', () => {
+  it('keeps gift products out of the normal collection', () => {
     const normal = PRODUCTS[0];
-    const offerOnly = { ...normal, id: 'offer-only-test', listing_type: 'offer' as const };
-    expect(shopProducts([normal, offerOnly]).map(product => product.id)).toEqual([normal.id]);
+    const gift = { ...normal, id: 'offer-gift-test', offer_id: 'offer-test' };
+    expect(collectionProducts([normal, gift]).map(product => product.id)).toEqual([normal.id]);
   });
   it('marks a product as new for exactly seven days after creation', () => {
     const now = Date.parse('2026-10-20T12:00:00.000Z');

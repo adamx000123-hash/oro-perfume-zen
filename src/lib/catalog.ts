@@ -81,8 +81,8 @@ export function isNewProduct(createdAt?: string | null, now = Date.now()) {
   const created = Date.parse(createdAt);
   return Number.isFinite(created) && created <= now && now - created < NEW_PRODUCT_WINDOW_MS;
 }
-export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear; created_at?: string; listing_type?: 'product' | 'offer' };
-export const shopProducts = (products: Product[]) => products.filter(product => product.listing_type !== 'offer');
+export type Product = { id: string; name: string; category: string; family: string; price: number; discount: number; image: string; images?: readonly string[]; description: string; notes?: readonly string[]; characteristics: readonly Characteristic[]; display?: ProductDisplay; mainAccords?: MainAccord[]; whenToWear?: WhenToWear; created_at?: string; offer_id?: string };
+export const collectionProducts = (products: Product[]) => products.filter(product => !product.offer_id);
 export function parseProductPresentation(value: unknown): { characteristics: Characteristic[]; display: ProductDisplay; images?: string[] } {
   if (Array.isArray(value)) return { characteristics: value as Characteristic[], display: DEFAULT_PRODUCT_DISPLAY };
   if (value && typeof value === 'object') {
@@ -98,7 +98,7 @@ export function parseProductPresentation(value: unknown): { characteristics: Cha
 export function serializeProductPresentation(characteristics: readonly Characteristic[], display: ProductDisplay, images: readonly string[] = []) {
   return { items: [...characteristics], images: [...images], display: { showDescription: display.showDescription, showPrice: display.showPrice, showSize: display.showSize, sizes: [...display.sizes] } };
 }
-export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; images?: string[]; product_ids?: string[] };
+export type Offer = { id: string; label: string; name: string; description: string; kind: 'percentage' | 'bundle' | 'limited'; images?: string[]; product_ids?: string[]; gift_products?: Product[] };
 export type StoreSettings = { whatsappNumber: string; instagramUrl: string; offerEnd: string };
 export type StoreData = { products: Product[]; offers: Offer[]; settings: StoreSettings };
 // Bundled photos can be referenced by key from the admin dashboard; other values are uploaded image URLs.

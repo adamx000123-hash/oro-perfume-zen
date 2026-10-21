@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      offer_gift_products: {
+        Row: {
+          id: string
+          offer_id: string
+          source_product_id: string | null
+          name: string
+          category: string
+          family: string
+          price: number
+          discount: number
+          image: string
+          images: string[]
+          description: string
+          notes: string[]
+          characteristics: Json
+          main_accords: Json
+          when_to_wear: Json
+          sort: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          offer_id: string
+          source_product_id?: string | null
+          name: string
+          category?: string
+          family?: string
+          price?: number
+          discount?: number
+          image?: string
+          images?: string[]
+          description?: string
+          notes?: string[]
+          characteristics?: Json
+          main_accords?: Json
+          when_to_wear?: Json
+          sort?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          offer_id?: string
+          name?: string
+          category?: string
+          family?: string
+          price?: number
+          discount?: number
+          image?: string
+          images?: string[]
+          description?: string
+          notes?: string[]
+          characteristics?: Json
+          main_accords?: Json
+          when_to_wear?: Json
+          sort?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           active: boolean
@@ -64,7 +123,6 @@ export type Database = {
           id: string
           image: string
           images: string[]
-          listing_type: string
           main_accords: Json
           name: string
           notes: string[]
@@ -83,8 +141,6 @@ export type Database = {
           id: string
           image?: string
           images?: string[]
-          listing_type?: string
-          listing_type?: string
           main_accords?: Json
           name: string
           notes?: string[]
