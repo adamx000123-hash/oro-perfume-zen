@@ -1156,3 +1156,45 @@ img, svg { max-width: 100%; }
 @media (max-width: 560px) {
   .offer-free-badge { top: 6px; left: 6px; min-width: 45px; min-height: 27px; font-size: 11px; }
 }
+
+
+.cart-total-value {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.cart-offer-quantity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.cart-offer-quantity-label {
+  color: var(--muted-foreground);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  white-space: nowrap;
+}
+.cart-offer-quantity .quantity-control { background: var(--surface); }
+.cart-offer-quantity .quantity-control button {
+  width: 32px;
+  height: 38px;
+  min-height: 38px;
+  padding: 0;
+}
+.cart-offer-quantity .quantity-control span { min-width: 22px; font-size: 12px; }
+.cart-totals .cart-offer-quantity-row {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.cart-offer-quantity-row > span { color: var(--muted-foreground); }
+@media (max-width: 390px) {
+  .cart-total-value { gap: 6px; flex-wrap: wrap; }
+  .cart-offer-quantity-label { font-size: 8px; }
+  .cart-offer-quantity .quantity-control button { width: 30px; }
+}
