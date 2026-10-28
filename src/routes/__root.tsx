@@ -108,6 +108,24 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" dir="ltr">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: `(() => {
+          if (window.location.pathname !== "/" || window.location.hash || window.scrollY > 0) return;
+          const scrollToCollection = () => {
+            const collection = document.getElementById("perfumes");
+            if (!collection || window.scrollY > 0) return false;
+            const header = document.querySelector(".site-header");
+            const headerHeight = header instanceof HTMLElement ? header.getBoundingClientRect().height : 0;
+            const top = Math.max(0, collection.getBoundingClientRect().top + window.scrollY - headerHeight - 12);
+            window.scrollTo(0, top);
+            return true;
+          };
+          if (scrollToCollection()) return;
+          const observer = new MutationObserver(() => {
+            if (scrollToCollection()) observer.disconnect();
+          });
+          observer.observe(document.documentElement, { childList: true, subtree: true });
+          window.setTimeout(() => observer.disconnect(), 10000);
+        })();` }} />
       </head>
       <body>
         {children}
