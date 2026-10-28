@@ -1198,3 +1198,25 @@ img, svg { max-width: 100%; }
   .cart-offer-quantity-label { font-size: 8px; }
   .cart-offer-quantity .quantity-control button { width: 30px; }
 }
+
+
+.cart-item-controls { flex-wrap: wrap; }
+.cart-item-description-link {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 9px;
+  border: 1px solid var(--gold);
+  color: var(--foreground);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+}
+.cart-item-description-link:hover { background: var(--gold-soft); }
+.cart-item-description-link svg { flex: 0 0 auto; }
+.offer-product-description { width: 100%; justify-content: center; text-decoration: none; }
