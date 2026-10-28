@@ -97,6 +97,20 @@ export function Storefront({ data = FALLBACK_STORE }: { data?: StoreData }) {
     channel.subscribe(status => { if (status === 'SUBSCRIBED') void channel.track({ at: new Date().toISOString() }); });
     return () => { void supabase.removeChannel(channel); };
   }, []);
+  useEffect(() => {
+    // Only guide visitors who open the homepage directly; never override a hash link or their own scroll.
+    if (window.location.hash) return;
+    const timer = window.setTimeout(() => {
+      const collection = document.getElementById('perfumes');
+      if (!collection || window.scrollY > 0) return;
+      const stickyHeader = document.querySelector<HTMLElement>('.site-header');
+      const headerHeight = stickyHeader?.getBoundingClientRect().height ?? 0;
+      const top = Math.max(0, collection.getBoundingClientRect().top + window.scrollY - headerHeight - 12);
+      const behavior: ScrollBehavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+      window.scrollTo({ top, behavior });
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, []);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [ready, setReady] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
