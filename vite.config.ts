@@ -7,24 +7,6 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  vite: {
-    build: {
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              {
-                name: "route-pages",
-                test: /src[\\/]routes[\\/]/,
-                minSize: 1,
-                maxSize: 300 * 1024,
-              },
-            ],
-          },
-        },
-      },
-    },
-  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
