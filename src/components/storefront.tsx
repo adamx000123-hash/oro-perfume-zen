@@ -70,7 +70,10 @@ function OfferImageCarousel({ banners, onSelect }: { banners: OfferBanner[]; onS
   useEffect(() => () => { if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current); }, []);
   return <div className="offer-image-carousel" aria-label="Offer banners" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false); }}>
     <div className="offer-image-viewport" ref={viewport} onPointerDown={() => { if (animationFrame.current !== null) cancelAnimationFrame(animationFrame.current); animationFrame.current = null; setPaused(true); }} onPointerUp={() => setPaused(false)} onPointerCancel={() => setPaused(false)} onScroll={event => { const width = event.currentTarget.clientWidth; if (width) { const index = Math.min(images.length - 1, Math.round(event.currentTarget.scrollLeft / width)); activeIndexRef.current = index; setActiveIndex(current => current === index ? current : index); } }}>
-      {banners.map((banner, index) => <button type="button" className={index === activeIndex ? 'offer-image-slide is-active' : 'offer-image-slide'} key={`${banner.offer.id}-${index}`} onClick={() => onSelect(banner.offer)} aria-label={`View products in offer ${banner.offer.name}`}><img src={banner.image} alt={`Offer: ${banner.offer.name}`} loading={index === 0 ? 'eager' : 'lazy'} /></button>)}
+      {banners.map((banner, index) => <div className={index === activeIndex ? 'offer-image-slide is-active' : 'offer-image-slide'} key={`${banner.offer.id}-${index}`}>
+        <button type="button" className="offer-image-slide-image" onClick={() => onSelect(banner.offer)} aria-label={`View products in offer ${banner.offer.name}`}><img src={banner.image} alt={`Offer: ${banner.offer.name}`} loading={index === 0 ? 'eager' : 'lazy'} /></button>
+        <Button type="button" className="primary-cta offer-image-buy" onClick={() => onSelect(banner.offer)}>BUY OFFER NOW <ShoppingBag size={17}/></Button>
+      </div>)}
     </div>
     {images.length > 1 && <>
       <Button type="button" variant="ghost" className="offer-carousel-arrow offer-carousel-prev" onClick={() => show(activeIndex - 1)} aria-label="Previous offer image"><ChevronLeft size={20}/></Button>
