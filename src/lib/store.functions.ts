@@ -24,16 +24,16 @@ export const getStoreData = createServerFn({ method: 'GET' }).handler(async (): 
     } },
   });
   try {
-    const productsWithGallery = await db.from('products').select('id,name,category,family,price,discount,image,images,description,notes,characteristics,main_accords,when_to_wear,created_at').eq('visible', true).order('sort').order('created_at');
-    // Keep the shop usable while an existing Supabase project is waiting for the gallery migration.
-    const products = productsWithGallery.error
-      ? await db.from('products').select('id,name,category,family,price,discount,image,description,notes,characteristics,main_accords,when_to_wear,created_at').eq('visible', true).order('sort').order('created_at')
-      : productsWithGallery;
-    const [offersWithProducts, settings, giftProductsResult] = await Promise.all([
+    const [productsWithGallery, offersWithProducts, settings, giftProductsResult] = await Promise.all([
+      db.from('products').select('id,name,category,family,price,discount,image,images,description,notes,characteristics,main_accords,when_to_wear,created_at').eq('visible', true).order('sort').order('created_at'),
       db.from('offers').select('id,label,name,description,kind,images,product_ids').eq('active', true).order('sort').order('created_at'),
       db.from('site_settings').select('whatsapp_number,instagram_url,offer_end').eq('id', 1).maybeSingle(),
       db.from('offer_gift_products').select('*').order('sort').order('created_at'),
     ]);
+    // Keep the shop usable while an existing Supabase project is waiting for the gallery migration.
+    const products = productsWithGallery.error
+      ? await db.from('products').select('id,name,category,family,price,discount,image,description,notes,characteristics,main_accords,when_to_wear,created_at').eq('visible', true).order('sort').order('created_at')
+      : productsWithGallery;
     const offersWithImages = offersWithProducts.error && /product_ids|column|schema cache/i.test(offersWithProducts.error.message)
       ? await db.from('offers').select('id,label,name,description,kind,images').eq('active', true).order('sort').order('created_at')
       : offersWithProducts;

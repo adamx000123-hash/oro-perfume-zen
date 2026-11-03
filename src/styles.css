@@ -649,7 +649,7 @@ strong, b { font-weight:600; }
 .product-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-elegant); }
 .product-image { aspect-ratio: 1 / 1; border-bottom: 1px solid var(--border); }
 .product-card-copy { display: flex; flex-direction: column; align-items: stretch; padding: 15px 17px 17px; }
-.product-card .product-name { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; min-height: 2.5em; margin-top: 0; font-size: clamp(18px, 2vw, 25px); line-height: 1.22; }
+.product-card .product-name { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; min-height: 1.22em; margin-top: 0; font-size: clamp(18px, 2vw, 25px); line-height: 1.22; }
 .product-card .fragrance-family { min-height: 1.4em; margin-top: 5px; }
 .product-card-description { display: -webkit-box; min-height: 2.8em; overflow: hidden; margin: 7px 0 0; color: var(--muted-foreground); font-size: 12px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .product-card .product-price { margin-top: 10px; color: var(--gold); font-size: clamp(16px, 1.8vw, 21px); font-weight: 600; }
@@ -669,7 +669,7 @@ strong, b { font-weight:600; }
 @media (max-width: 479px) {
   .product-grid { gap: 15px 10px; }
   .product-card-copy { padding: 9px 8px 10px; }
-  .product-card .product-name { min-height: 2.45em; font-size: 16px; }
+  .product-card .product-name { min-height: 1.22em; font-size: 16px; }
   .product-card .fragrance-family { font-size: 9px; }
   .product-card-description { font-size: 10px; line-height: 1.35; }
   .product-card .product-price { font-size: 15px; }
