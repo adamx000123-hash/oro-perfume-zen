@@ -651,6 +651,7 @@ strong, b { font-weight:600; }
 .product-card-copy { display: flex; flex-direction: column; align-items: stretch; padding: 15px 17px 17px; }
 .product-card .product-name { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; min-height: 2.5em; margin-top: 0; font-size: clamp(18px, 2vw, 25px); line-height: 1.22; }
 .product-card .fragrance-family { min-height: 1.4em; margin-top: 5px; }
+.product-card-description { display: -webkit-box; min-height: 2.8em; overflow: hidden; margin: 7px 0 0; color: var(--muted-foreground); font-size: 12px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .product-card .product-price { margin-top: 10px; color: var(--gold); font-size: clamp(16px, 1.8vw, 21px); font-weight: 600; }
 .product-order-link { display: flex; min-height: 46px; align-items: center; justify-content: center; gap: 9px; margin-top: 13px; padding: 10px 12px; background: var(--foreground); color: var(--background); font-size: 11px; font-weight: 600; letter-spacing: .08em; transition: background .2s, color .2s; }
 .product-order-link:hover { background: var(--gold); color: var(--foreground); }
@@ -661,6 +662,7 @@ strong, b { font-weight:600; }
   .product-grid { gap: 18px 12px; }
   .product-card-copy { padding: 11px 10px 12px; }
   .product-card .product-name { font-size: clamp(16px, 4vw, 21px); }
+  .product-card-description { font-size: 11px; }
   .product-card .product-price { margin-top: 8px; font-size: 16px; }
   .product-order-link { min-height: 44px; margin-top: 10px; gap: 5px; font-size: 9px; letter-spacing: .04em; }
 }
@@ -669,6 +671,7 @@ strong, b { font-weight:600; }
   .product-card-copy { padding: 9px 8px 10px; }
   .product-card .product-name { min-height: 2.45em; font-size: 16px; }
   .product-card .fragrance-family { font-size: 9px; }
+  .product-card-description { font-size: 10px; line-height: 1.35; }
   .product-card .product-price { font-size: 15px; }
   .product-order-link { min-height: 44px; padding-inline: 5px; font-size: 8px; }
 }
