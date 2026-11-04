@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize, isNewProduct, NEW_PRODUCT_WINDOW_MS, collectionProducts } from '@/lib/catalog';
+import { PRODUCTS, productHash, totals, orderMessage, productPriceBreakdown, defaultProductSize, isNewProduct, NEW_PRODUCT_WINDOW_MS, collectionProducts, splitCartItems } from '@/lib/catalog';
 
 describe('ORO shopping rules', () => {
   it('keeps gift products out of the normal collection', () => {
@@ -48,4 +48,9 @@ describe('ORO shopping rules', () => {
   });
   it('creates a shareable product hash for every fragrance id', () => { expect(productHash('rose')).toBe('#perfume/rose'); expect(PRODUCTS.every(product => productHash(product.id).startsWith('#perfume/'))).toBe(true); });
   it('returns zero for an empty bag', () => { expect(totals([]).total).toBe(0); });
+  it('keeps offer items separate from the individual fragrance bag', () => {
+    const split = splitCartItems([{ id: 'rose', size: 50, quantity: 1 }, { id: 'noir', size: 100, quantity: 2, offerId: 'summer', offerName: 'Summer Offer' }]);
+    expect(split.individual.map(item => item.id)).toEqual(['rose']);
+    expect(split.offers.map(item => item.id)).toEqual(['noir']);
+  });
 });

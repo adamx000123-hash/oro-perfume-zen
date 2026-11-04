@@ -113,6 +113,7 @@ const OFFER_LABELS = ['THE SIGNATURE EDIT', 'THE PERFECT TRIO', 'ONLY FOR A MOME
 export const OFFERS: Offer[] = CATALOG.filter(item => item.type === 'offer').map((o, i) => ({ id: o.id, label: OFFER_LABELS[i] ?? '', name: o.name, description: o.description, kind: o.kind }));
 export const FALLBACK_STORE: StoreData = { products: PRODUCTS, offers: OFFERS, settings: { whatsappNumber: WHATSAPP_NUMBER, instagramUrl: INSTAGRAM_URL, offerEnd: OFFER_END } };
 export type CartItem = { id: string; size: number; quantity: number; offerId?: string; offerName?: string };
+export const splitCartItems = (items: CartItem[]) => ({ individual: items.filter(item => !item.offerId), offers: items.filter(item => Boolean(item.offerId)) });
 export const money = (value: number) => `${Math.round(value).toLocaleString('en-US')} MAD`;
 export function unitPrice(product: Product, size: number) { return Math.round(product.price * (size === 50 ? 0.65 : 1)); }
 export function productPriceBreakdown(product: Product, size: number) {
